@@ -1,0 +1,5 @@
+@import "../styles/globals.css";
+
+.center {
+  @apply flex items-center justify-center align-middle;
+}
