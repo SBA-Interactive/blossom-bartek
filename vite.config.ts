@@ -33,7 +33,7 @@ export default defineConfig({
           );
           return [
             '/',
-            '/products/',
+            '/products',
             ...productRoutes,
             '/about',
             '/contact',
