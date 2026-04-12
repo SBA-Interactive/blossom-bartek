@@ -11,6 +11,8 @@ import { BlurFade } from "@/components/ui/blur-fade";
 import { Link } from "@tanstack/react-router";
 import { useCartStore } from "@/store/useCartStore";
 import { useSubscriptionStore, SUBSCRIPTION_PLANS } from "@/store/useSubscriptionStore";
+import { FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_COST } from "@/constants/shipping";
+import { BLUR_FADE_DELAY_MEDIUM } from "@/constants/animation";
 import {
   ArrowLeft,
   ArrowRight,
@@ -35,7 +37,7 @@ export default function CheckoutPage() {
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const discountedSubtotal = hasDiscount ? applyDiscount(subtotal) : subtotal;
   const discountAmount = subtotal - discountedSubtotal;
-  const shipping = subscriberFreeShipping || discountedSubtotal >= 50 ? 0 : 4.99;
+  const shipping = subscriberFreeShipping || discountedSubtotal >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_COST;
   const total = discountedSubtotal + shipping;
 
   return (
@@ -180,7 +182,7 @@ export default function CheckoutPage() {
                 </Button>
               </div>
 
-              <BlurFade delay={0.2} inView>
+              <BlurFade delay={BLUR_FADE_DELAY_MEDIUM} inView>
                 <Card className="sticky top-28 h-fit">
                   <CardHeader>
                     <CardTitle className="text-xl font-heading font-semibold">

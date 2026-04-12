@@ -25,6 +25,15 @@ import { AnimatedList } from "@/components/ui/animated-list";
 import { Mail, MapPin, Phone, Send, Clock, MessageCircle, CheckCircle } from "lucide-react";
 import { useState } from "react";
 import FAQ from "../components/FAQ";
+import { SectionWrapper } from "@/components/section-wrapper";
+import {
+  BLUR_FADE_DELAY_SHORT,
+  BLUR_FADE_DELAY_MEDIUM,
+  BLUR_FADE_DELAY_LONG,
+  BLUR_FADE_DELAY_MEDIUM_LONG,
+  ANIMATED_LIST_DELAY,
+  ANIMATED_LIST_STAGGER,
+} from "@/constants/animation";
 
 const contactInfo = [
   {
@@ -89,33 +98,34 @@ export default function ContactPage() {
 
   return (
     <main className="pt-24">
-      <section className="py-16 bg-linear-to-br from-primary/5 via-background to-secondary/20">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <BlurFade inView>
-            <div className="max-w-3xl mx-auto text-center">
-              <Badge variant="secondary" className="inline-flex items-center gap-2 px-4 py-2 mb-6">
-                <MessageCircle className="w-4 h-4" />
-                Get in Touch
-              </Badge>
-              <h1 className="text-4xl sm:text-5xl font-heading font-bold text-foreground mb-4">
-                We&apos;d Love to Hear From You
-              </h1>
-              <p className="text-lg text-muted-foreground">
-                Have questions about our products, shipping, or anything else? We&apos;re here to
-                help and would love to hear your feedback.
-              </p>
-            </div>
-          </BlurFade>
-        </div>
-      </section>
+      <SectionWrapper loading={false} error={null}>
+        <section className="py-16 bg-linear-to-br from-primary/5 via-background to-secondary/20">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <BlurFade inView>
+              <div className="max-w-3xl mx-auto text-center">
+                <Badge variant="secondary" className="inline-flex items-center gap-2 px-4 py-2 mb-6">
+                  <MessageCircle className="w-4 h-4" />
+                  Get in Touch
+                </Badge>
+                <h1 className="text-4xl sm:text-5xl font-heading font-bold text-foreground mb-4">
+                  We&apos;d Love to Hear From You
+                </h1>
+                <p className="text-lg text-muted-foreground">
+                  Have questions about our products, shipping, or anything else? We&apos;re here to
+                  help and would love to hear your feedback.
+                </p>
+              </div>
+            </BlurFade>
+          </div>
+        </section>
 
-      <section className="py-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <AnimatedList delay={0.1}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-4xl mx-auto -mt-8">
-              {contactInfo.map((info, index) => (
-                <BlurFade key={index} delay={0.1 * index} inView>
-                  <Card className="text-center hover:shadow-md transition-all border-border/50">
+        <section className="py-16">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <AnimatedList delay={ANIMATED_LIST_DELAY}>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-4xl mx-auto -mt-8">
+                {contactInfo.map((info, index) => (
+                  <BlurFade key={index} delay={ANIMATED_LIST_STAGGER * index} inView>
+                    <Card className="text-center hover:shadow-md transition-all border-border/50">
                     <CardContent className="pt-6">
                       <Avatar className="w-14 h-14 bg-primary/10 mx-auto mb-4">
                         <AvatarFallback className="bg-primary/10">
@@ -224,8 +234,8 @@ export default function ContactPage() {
               </Card>
             </BlurFade>
 
-            <BlurFade delay={0.2} inView>
-              <div className="space-y-6">
+            <BlurFade delay={BLUR_FADE_DELAY_MEDIUM} inView>
+              <div className="space-y-6" id="faq">
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-2xl font-heading font-bold">Quick Answers</CardTitle>
@@ -276,10 +286,47 @@ export default function ContactPage() {
                 </Card>
               </div>
             </BlurFade>
+
+            <BlurFade delay={BLUR_FADE_DELAY_MEDIUM_LONG} inView>
+              <Card className="mt-6" id="shipping">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-heading font-bold">Shipping Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">Delivery Times</h4>
+                    <p className="text-muted-foreground">Standard delivery: 3-5 business days within Greece. Free shipping on orders over €50.</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2">Tracking</h4>
+                    <p className="text-muted-foreground">You'll receive a tracking link via email once your order ships.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </BlurFade>
+
+            <BlurFade delay={BLUR_FADE_DELAY_LONG} inView>
+              <Card className="mt-6" id="returns">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-heading font-bold">Returns Policy</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">30-Day Returns</h4>
+                    <p className="text-muted-foreground">Not satisfied? Return unopened products within 30 days for a full refund.</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2">How to Return</h4>
+                    <p className="text-muted-foreground">Contact us to get a return label. Pack items securely and drop off at any pickup point.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </BlurFade>
           </div>
         </div>
         <FAQ />
       </section>
+      </SectionWrapper>
     </main>
   );
 }

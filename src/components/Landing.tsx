@@ -4,6 +4,7 @@ import { AspectRatio } from "./ui/aspect-ratio";
 import { BentoGrid } from "./ui/bento-grid";
 import { BlurFade } from "./ui/blur-fade";
 import { Separator } from "./ui/separator";
+import { BLUR_FADE_DELAY_MEDIUM } from "@/constants/animation";
 
 import "../index.css";
 
@@ -37,7 +38,7 @@ export function Landing() {
 
       <Separator className="my-8" />
 
-      <BlurFade delay={0.2} inView>
+      <BlurFade delay={BLUR_FADE_DELAY_MEDIUM} inView>
         <div className={cn("w-full bg-accent text-accent-foreground")}>
           <div className="min-h-[20rem] sm:h-80">
             <div className="grid grid-cols-1 md:grid-cols-2">

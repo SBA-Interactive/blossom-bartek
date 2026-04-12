@@ -34,12 +34,19 @@ import { AnimatedList } from "@/components/ui/animated-list";
 import { BorderBeam } from "@/components/ui/border-beam";
 // Removed BentoGrid/BentoCard/Marquee (failed UX) - using grid/list views instead
 import { Link, useSearch, useNavigate } from "@tanstack/react-router";
-import { products, categories, type Product } from "@/constants/products";
+import { products, categories, badges, type Product } from "@/constants/products";
+import { BOTTLE_SIZES } from "@/constants/product";
+import { MAX_PRICE_FILTER, MIN_PRICE_FILTER, MAX_COMPARE_ITEMS } from "@/constants/filters";
+import { NOTIFICATION_DURATION } from "@/constants/timeouts";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { useCompareStore } from "@/store/useCompareStore";
-import { Search, Leaf, ShoppingBag, Package, Check, SlidersHorizontal, X, Heart, Scale, LayoutGrid, List, Sparkles, Icon } from "lucide-react";
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useReviewStore } from "@/store/useReviewStore";
+// import { PerfumeConfigurator } from "@/components/PerfumeConfigurator";
+import { Search, Leaf, ShoppingBag, Package, Check, SlidersHorizontal, X, Heart, Scale, LayoutGrid, List, Sparkles, Icon, Star, Wand2 } from "lucide-react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { SectionWrapper } from "@/components/section-wrapper";
+import { useAsyncDataWithRetry } from "@/components/use-async-data";
 
 type SortOption = "newest" | "price-asc" | "price-desc" | "name-asc" | "name-desc";
 type ViewMode = "grid" | "list";
@@ -62,18 +69,23 @@ function ProductCard({ product, featured = false }: { product: Product; featured
   const compareItems = useCompareStore((state) => state.items);
   const addToCompare = useCompareStore((state) => state.addItem);
   const removeFromCompare = useCompareStore((state) => state.removeItem);
+  const getAverageRating = useReviewStore((state) => state.getAverageRating);
+  const getReviewCount = useReviewStore((state) => state.getReviewCount);
 
   const isInWishlist = wishlistItems.some((item) => item.productId === product.id);
   const isInCompare = compareItems.some((item) => item.productId === product.id);
   const [added, setAdded] = useState(false);
   const cardRef = useRef<HTMLLIElement>(null);
 
+  const rating = useMemo(() => getAverageRating(product.id), [product.id, getAverageRating]);
+  const reviewCount = useMemo(() => getReviewCount(product.id), [product.id, getReviewCount]);
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     addItem(product.id, 1);
     setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+    setTimeout(() => setAdded(false), NOTIFICATION_DURATION);
   };
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
@@ -99,6 +111,13 @@ function ProductCard({ product, featured = false }: { product: Product; featured
   return (
     <li ref={cardRef} className="list-none">
       <Card className={`group overflow-hidden border border-border shadow-sm hover:shadow-md transition-all duration-300 relative ${featured ? "border-2 border-[#D4AF37]" : ""}`}>
+        <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
+          <Badge variant="secondary" className="px-4 py-2 text-base font-semibold bg-blue-500 text-white">{product.size}</Badge>
+          <Badge className="px-4 py-2 text-base" style={{ 
+            backgroundColor: product.badge === 'New' ? '#3498db' : product.badge === 'Bestseller' ? '#e74c3c' : '#2ecc71',
+            color: 'white'
+          }}>{product.badge}</Badge>
+        </div>
         <BorderBeam
           size={200}
           duration={6}
@@ -107,13 +126,13 @@ function ProductCard({ product, featured = false }: { product: Product; featured
           className="opacity-0 group-hover:opacity-100 transition-opacity"
         />
         <Link to="/product/$productId" params={{ productId: product.id }} className="block">
-          <figure className="relative aspect-[4/5] overflow-hidden bg-muted">
+          <figure className="relative aspect-video sm:aspect-[4/5] overflow-hidden bg-muted">
             <img
               src={product.image}
               alt={`${product.name} fragrance bottle`}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
-            <Badge className="absolute top-4 left-4 z-10">{product.badge}</Badge>
+            
             <div className="absolute top-4 right-4 flex flex-col gap-2 z-20">
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -151,8 +170,7 @@ function ProductCard({ product, featured = false }: { product: Product; featured
             <figcaption className="sr-only">{product.name}</figcaption>
           </figure>
         </Link>
-
-        <CardContent className="p-6">
+        <CardContent className="p-6 pt-12">
           <p className="flex items-center gap-2 mb-2 overflow-hidden">
             <Leaf className="w-4 h-4 text-primary shrink-0" aria-hidden="true" />
             <span className="text-xs text-muted-foreground uppercase tracking-wider truncate">
@@ -165,6 +183,23 @@ function ProductCard({ product, featured = false }: { product: Product; featured
           <CardDescription className="text-sm mb-5 leading-relaxed line-clamp-2">
             {product.description}
           </CardDescription>
+          {rating > 0 && (
+            <div className="flex items-center gap-1 mb-3">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  className={`w-3 h-3 ${
+                    star <= Math.round(rating)
+                      ? "fill-yellow-400 text-yellow-400"
+                      : "text-muted-foreground"
+                  }`}
+                />
+              ))}
+              <span className="text-xs text-muted-foreground ml-1">
+                {rating.toFixed(1)} ({reviewCount})
+              </span>
+            </div>
+          )}
           <CardFooter className="flex items-center justify-between p-0 gap-4">
             <data
               value={product.price}
@@ -223,6 +258,15 @@ function FilterPanel({
   onCategoryChange,
   onNotesChange,
   onPriceChange,
+  selectedBadges,
+  setSelectedBadges,
+  selectedSizes,
+  setSelectedSizes,
+  inStock,
+  setInStock,
+  onBadgeChange,
+  onSizeChange,
+  onStockChange,
 }: {
   selectedCategories: string[];
   setSelectedCategories: React.Dispatch<React.SetStateAction<string[]>>;
@@ -234,6 +278,16 @@ function FilterPanel({
   onCategoryChange: (cats: string[]) => void;
   onNotesChange: (notes: string[]) => void;
   onPriceChange: (range: [number, number]) => void;
+  selectedBadges: string[];
+  setSelectedBadges: React.Dispatch<React.SetStateAction<string[]>>;
+  selectedSizes: string[];
+  setSelectedSizes: React.Dispatch<React.SetStateAction<string[]>>;
+  inStock: boolean;
+  setInStock: React.Dispatch<React.SetStateAction<boolean>>;
+  onBadgeChange: (badges: string[]) => void;
+  onSizeChange: (sizes: string[]) => void;
+  onStockChange: (inStock: boolean) => void;
+  onReset: (filter: "category" | "price" | "notes" | "badge" | "size" | "stock") => void;
 }) {
   const toggleCategory = (cat: string) => {
     const newCats = selectedCategories.includes(cat)
@@ -251,7 +305,28 @@ function FilterPanel({
     onNotesChange(newNotes);
   };
 
-  const hasFilters = selectedCategories.length > 0 || selectedNotes.length > 0 || priceRange[0] > 0 || priceRange[1] < 100;
+  const toggleBadge = (badge: string) => {
+    const newBadges = selectedBadges.includes(badge)
+      ? selectedBadges.filter((b) => b !== badge)
+      : [...selectedBadges, badge];
+    setSelectedBadges(newBadges);
+    onBadgeChange(newBadges);
+  };
+
+  const toggleSize = (size: string) => {
+    const newSizes = selectedSizes.includes(size)
+      ? selectedSizes.filter((s) => s !== size)
+      : [...selectedSizes, size];
+    setSelectedSizes(newSizes);
+    onSizeChange(newSizes);
+  };
+
+  const handleStockChange = (checked: boolean) => {
+    setInStock(checked);
+    onStockChange(checked);
+  };
+
+  const hasFilters = selectedCategories.length > 0 || selectedNotes.length > 0 || priceRange[0] > 0 || priceRange[1] < MAX_PRICE_FILTER || selectedBadges.length > 0 || selectedSizes.length > 0 || inStock;
 
   const handlePriceMinChange = (value: number) => {
     const newRange: [number, number] = [value, priceRange[1]];
@@ -270,15 +345,22 @@ function FilterPanel({
       <div className="flex items-center justify-between">
         <h3 className="font-heading font-semibold text-lg">Filters</h3>
         {hasFilters && (
-          <Button variant="ghost" size="sm" onClick={onClear} className="text-xs h-7">
-            <X className="w-3 h-3 mr-1" />
-            Clear
-          </Button>
+<Button variant="outline" size="lg" onClick={onClear} className="text-sm p-4 my-2 mr-4">
+  <X className="w-4 h-4 mr-2" />
+  Clear All
+</Button>
         )}
       </div>
 
       <div className="space-y-3">
-        <h4 className="text-sm font-medium">Category</h4>
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-medium">Category</h4>
+          {selectedCategories.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={() => onReset("category")} className="text-xs h-7">
+              Reset
+            </Button>
+          )}
+        </div>
         <div className="space-y-2">
           {categories.map((cat) => (
             <div key={cat} className="flex items-center gap-2">
@@ -298,7 +380,14 @@ function FilterPanel({
       <Separator />
 
       <div className="space-y-3">
-        <h4 className="text-sm font-medium">Price Range</h4>
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-medium">Price Range</h4>
+          {(priceRange[0] > MIN_PRICE_FILTER || priceRange[1] < MAX_PRICE_FILTER) && (
+            <Button variant="ghost" size="sm" onClick={() => onReset("price")} className="text-xs h-7">
+              Reset
+            </Button>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <div className="flex-1">
             <Label htmlFor="min-price" className="text-xs text-muted-foreground">Min</Label>
@@ -306,8 +395,9 @@ function FilterPanel({
               <InputGroupAddon>€</InputGroupAddon>
               <InputGroupInput
                 id="min-price"
-                type="number"
-                min={0}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]+"
                 value={priceRange[0]}
                 onChange={(e) => handlePriceMinChange(Number(e.target.value))}
               />
@@ -320,8 +410,9 @@ function FilterPanel({
               <InputGroupAddon>€</InputGroupAddon>
               <InputGroupInput
                 id="max-price"
-                type="number"
-                min={0}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]+"
                 value={priceRange[1]}
                 onChange={(e) => handlePriceMaxChange(Number(e.target.value))}
               />
@@ -333,7 +424,14 @@ function FilterPanel({
       <Separator />
 
       <div className="space-y-3">
-        <h4 className="text-sm font-medium">Scent Notes</h4>
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-medium">Scent Notes</h4>
+          {selectedNotes.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={() => onReset("notes")} className="text-xs h-7">
+              Reset
+            </Button>
+          )}
+        </div>
         <div className="flex flex-wrap gap-2">
           {noteOptions.map((note) => (
             <Button
@@ -345,6 +443,83 @@ function FilterPanel({
             >
               {note}
             </Button>
+          ))}
+        </div>
+      </div>
+
+      <Separator />
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-medium">Availability</h4>
+          {inStock && (
+            <Button variant="ghost" size="sm" onClick={() => onReset("stock")} className="text-xs h-7">
+              Reset
+            </Button>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="in-stock"
+            checked={inStock}
+            onCheckedChange={handleStockChange}
+          />
+          <Label htmlFor="in-stock" className="text-sm cursor-pointer">
+            In Stock
+          </Label>
+        </div>
+      </div>
+
+      <Separator />
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-medium">Badges</h4>
+          {selectedBadges.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={() => onReset("badge")} className="text-xs h-7">
+              Reset
+            </Button>
+          )}
+        </div>
+        <div className="space-y-2">
+          {badges.map((badge) => (
+            <div key={badge} className="flex items-center gap-2">
+              <Checkbox
+                id={`badge-${badge}`}
+                checked={selectedBadges.includes(badge)}
+                onCheckedChange={() => toggleBadge(badge)}
+              />
+              <Label htmlFor={`badge-${badge}`} className="text-sm cursor-pointer">
+                {badge}
+              </Label>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <Separator />
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-medium">Bottle Size</h4>
+          {selectedSizes.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={() => onReset("size")} className="text-xs h-7">
+              Reset
+            </Button>
+          )}
+        </div>
+        <div className="space-y-2">
+          {BOTTLE_SIZES.map((size) => (
+            <div key={size.id} className="flex items-center gap-2">
+              <Checkbox
+                id={`size-${size.id}`}
+                checked={selectedSizes.includes(size.id)}
+                onCheckedChange={() => toggleSize(size.id)}
+              />
+              <Label htmlFor={`size-${size.id}`} className="text-sm cursor-pointer">
+                {size.name} ({size.volume}ml)
+              </Label>
+            </div>
           ))}
         </div>
       </div>
@@ -363,18 +538,29 @@ export default function ProductsPage() {
     searchParams.category ? [searchParams.category] : []
   );
   const [selectedNotes, setSelectedNotes] = useState<string[]>(
-    searchParams.notes ? [searchParams.notes] : []
+    searchParams.notes ? searchParams.notes.split(",") : []
   );
-  const [priceRange, setPriceRange] = useState<[number, number]>([
-    searchParams.priceMin || 0,
-    searchParams.priceMax || 100,
-  ]);
+  const [selectedBadges, setSelectedBadges] = useState<string[]>(
+    searchParams.badges ? searchParams.badges.split(",") : []
+  );
+  const [selectedSizes, setSelectedSizes] = useState<string[]>(
+    searchParams.sizes ? searchParams.sizes.split(",") : []
+  );
+  const [inStock, setInStock] = useState<boolean>(searchParams.inStock || false);
+const [priceRange, setPriceRange] = useState<[number, number]>([
+      searchParams.priceMin || 0,
+      searchParams.priceMax || MAX_PRICE_FILTER,
+    ]);
+  // const [configuratorOpen, setConfiguratorOpen] = useState(false);
   const featuredRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (searchParams.q) setSearch(searchParams.q);
     if (searchParams.category) setSelectedCategories([searchParams.category]);
-    if (searchParams.notes) setSelectedNotes([searchParams.notes]);
+    if (searchParams.notes) setSelectedNotes(searchParams.notes.split(","));
+    if (searchParams.badges) setSelectedBadges(searchParams.badges.split(","));
+    if (searchParams.sizes) setSelectedSizes(searchParams.sizes.split(","));
+    if (searchParams.inStock) setInStock(searchParams.inStock);
     if (searchParams.priceMin) setPriceRange((prev) => [searchParams.priceMin, prev[1]]);
     if (searchParams.priceMax) setPriceRange((prev) => [prev[0], searchParams.priceMax]);
   }, [searchParams]);
@@ -385,85 +571,120 @@ export default function ProductsPage() {
     }
   }, [searchParams.featured]);
 
-  const isFeatured = (productId: string) => {
+  const isFeatured = useCallback((productId: string) => {
     if (!searchParams.featured) return false;
     const featuredList = searchParams.featured.split(",");
     return featuredList.includes(productId);
-  };
+  }, [searchParams.featured]);
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setSelectedCategories([]);
     setSelectedNotes([]);
-    setPriceRange([0, 100]);
+    setPriceRange([MIN_PRICE_FILTER, MAX_PRICE_FILTER]);
+    setSelectedBadges([]);
+    setSelectedSizes([]);
+    setInStock(false);
     setSearch("");
     navigate({
       search: {
         q: "",
         category: "",
         notes: "",
-        priceMin: 0,
-        priceMax: 100,
+        priceMin: undefined,
+        priceMax: undefined,
         featured: "",
+        badges: "",
+        sizes: "",
+        inStock: undefined,
       },
     });
-  };
+  }, [navigate]);
 
-  const handleSearchChange = (value: string) => {
+  const handleSearchChange = useCallback((value: string) => {
     setSearch(value);
     navigate({
-      search: {
-        q: value,
-        category: selectedCategories[0] || "",
-        notes: selectedNotes[0] || "",
-        priceMin: priceRange[0],
-        priceMax: priceRange[1],
-        featured: "",
-      },
+      search: (prev) => ({ ...prev, q: value }),
     });
-  };
+  }, [navigate]);
 
-  const handleCategoryChange = (cats: string[]) => {
+  const handleCategoryChange = useCallback((cats: string[]) => {
     setSelectedCategories(cats);
     navigate({
-      search: {
-        q: search,
-        category: cats[0] || "",
-        notes: selectedNotes[0] || "",
-        priceMin: priceRange[0],
-        priceMax: priceRange[1],
-        featured: "",
-      },
+      search: (prev) => ({ ...prev, category: cats.join(",") }),
     });
-  };
+  }, [navigate]);
 
-  const handleNotesChange = (notes: string[]) => {
+  const handleNotesChange = useCallback((notes: string[]) => {
     setSelectedNotes(notes);
     navigate({
-      search: {
-        q: search,
-        category: selectedCategories[0] || "",
-        notes: notes[0] || "",
-        priceMin: priceRange[0],
-        priceMax: priceRange[1],
-        featured: "",
-      },
+      search: (prev) => ({ ...prev, notes: notes.join(",") }),
     });
-  };
+  }, [navigate]);
 
-  const handlePriceChange = (range: [number, number]) => {
+  const handlePriceChange = useCallback((range: [number, number]) => {
     setPriceRange(range);
     navigate({
-      search: {
-        q: search,
-        category: selectedCategories[0] || "",
-        notes: selectedNotes[0] || "",
+      search: (prev) => ({
+        ...prev,
         priceMin: range[0],
         priceMax: range[1],
-        featured: "",
-      },
+      }),
     });
-  };
+  }, [navigate]);
 
+  const handleBadgeChange = useCallback((badges: string[]) => {
+    setSelectedBadges(badges);
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        badges: badges.join(","),
+      }),
+    });
+  }, [navigate]);
+
+  const handleSizeChange = useCallback((sizes: string[]) => {
+    setSelectedSizes(sizes);
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        sizes: sizes.join(","),
+      }),
+    });
+  }, [navigate]);
+
+  const handleStockChange = useCallback((stock: boolean) => {
+    setInStock(stock);
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        inStock: stock,
+      }),
+    });
+  }, [navigate]);
+
+  const handleResetFilter = useCallback((filter: "category" | "price" | "notes" | "badge" | "size" | "stock") => {
+    switch (filter) {
+      case "category":
+        handleCategoryChange([]);
+        break;
+      case "price":
+        handlePriceChange([MIN_PRICE_FILTER, MAX_PRICE_FILTER]);
+        break;
+      case "notes":
+        handleNotesChange([]);
+        break;
+      case "badge":
+        handleBadgeChange([]);
+        break;
+      case "size":
+        handleSizeChange([]);
+        break;
+      case "stock":
+        handleStockChange(false);
+        break;
+    }
+  }, [handleCategoryChange, handlePriceChange, handleNotesChange, handleBadgeChange, handleSizeChange, handleStockChange]);
+  
   const filteredAndSortedProducts = useMemo(() => {
     let result = products.filter((product) => {
       const matchesSearch =
@@ -481,7 +702,11 @@ export default function ProductsPage() {
             product.notes.heart.includes(note) ||
             product.notes.base.includes(note)
         );
-      return matchesSearch && matchesCategory && matchesPrice && matchesNotes;
+      const matchesBadge = selectedBadges.length === 0 || selectedBadges.includes(product.badge);
+      const matchesSize = selectedSizes.length === 0 || selectedSizes.includes(product.sizeId);
+      const matchesStock = !inStock || product.stock > 0;
+        
+      return matchesSearch && matchesCategory && matchesPrice && matchesNotes && matchesBadge && matchesSize && matchesStock;
     });
 
     result.sort((a, b) => {
@@ -501,10 +726,15 @@ export default function ProductsPage() {
     });
 
     return result;
-  }, [search, sortBy, selectedCategories, selectedNotes, priceRange]);
+  }, [search, sortBy, selectedCategories, selectedNotes, priceRange, selectedBadges, selectedSizes, inStock]);
 
   const activeFilterCount =
-    selectedCategories.length + selectedNotes.length + (priceRange[0] > 0 || priceRange[1] < 100 ? 1 : 0);
+    selectedCategories.length +
+    selectedNotes.length +
+    (priceRange[0] > 0 || priceRange[1] < MAX_PRICE_FILTER ? 1 : 0) +
+    selectedBadges.length +
+    selectedSizes.length +
+    (inStock ? 1 : 0);
 
   return (
     <main className="pt-24">
@@ -524,8 +754,16 @@ export default function ProductsPage() {
               </h1>
               <p className="text-lg text-muted-foreground">
                 Discover unique scents crafted from nature&apos;s finest fruit peels. Each fragrance
-                tells a story of freshness and sustainability.
+                 tells a story of freshness and sustainability.
               </p>
+              <div className="mt-6 flex justify-center">
+                <Button size="lg" asChild>
+                  <Link to="/configurator">
+                    <Wand2 className="w-5 h-5 mr-2" />
+                    Configure Your Own!
+                  </Link>
+                </Button>
+              </div>
             </header>
           </BlurFade>
         </div>
@@ -577,10 +815,20 @@ export default function ProductsPage() {
                       setSelectedNotes={setSelectedNotes}
                       priceRange={priceRange}
                       setPriceRange={setPriceRange}
+                      selectedBadges={selectedBadges}
+                      setSelectedBadges={setSelectedBadges}
+                      selectedSizes={selectedSizes}
+                      setSelectedSizes={setSelectedSizes}
+                      inStock={inStock}
+                      setInStock={setInStock}
                       onClear={clearFilters}
                       onCategoryChange={handleCategoryChange}
                       onNotesChange={handleNotesChange}
                       onPriceChange={handlePriceChange}
+                      onBadgeChange={handleBadgeChange}
+                      onSizeChange={handleSizeChange}
+                      onStockChange={handleStockChange}
+                      onReset={handleResetFilter}
                     />
                   </div>
                 </SheetContent>
@@ -625,13 +873,24 @@ export default function ProductsPage() {
             </div>
           </div>
 
-          {(selectedCategories.length > 0 || selectedNotes.length > 0 || priceRange[0] > 0 || priceRange[1] < 100) && (
+          {(selectedCategories.length > 0 || selectedNotes.length > 0 || priceRange[0] > 0 || priceRange[1] < MAX_PRICE_FILTER || selectedBadges.length > 0 || selectedSizes.length > 0 || inStock) && (
             <div className="flex flex-wrap gap-2 mt-4">
+              {inStock && (
+                <Badge variant="secondary" className="gap-1">
+                  In Stock
+                  <button
+                    onClick={() => handleStockChange(false)}
+                    className="ml-1 hover:text-destructive"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </Badge>
+              )}
               {selectedCategories.map((cat) => (
                 <Badge key={cat} variant="secondary" className="gap-1">
                   {cat}
                   <button
-                    onClick={() => setSelectedCategories((prev) => prev.filter((c) => c !== cat))}
+                    onClick={() => handleCategoryChange(selectedCategories.filter((c) => c !== cat))}
                     className="ml-1 hover:text-destructive"
                   >
                     <X className="w-3 h-3" />
@@ -642,18 +901,40 @@ export default function ProductsPage() {
                 <Badge key={note} variant="secondary" className="gap-1">
                   {note}
                   <button
-                    onClick={() => setSelectedNotes((prev) => prev.filter((n) => n !== note))}
+                    onClick={() => handleNotesChange(selectedNotes.filter((n) => n !== note))}
                     className="ml-1 hover:text-destructive"
                   >
                     <X className="w-3 h-3" />
                   </button>
                 </Badge>
               ))}
-              {(priceRange[0] > 0 || priceRange[1] < 100) && (
+              {selectedBadges.map((badge) => (
+                <Badge key={badge} variant="secondary" className="gap-1">
+                  {badge}
+                  <button
+                    onClick={() => handleBadgeChange(selectedBadges.filter((b) => b !== badge))}
+                    className="ml-1 hover:text-destructive"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </Badge>
+              ))}
+              {selectedSizes.map((size) => (
+                <Badge key={size} variant="secondary" className="gap-1">
+                  {BOTTLE_SIZES.find(s => s.id === size)?.name}
+                  <button
+                    onClick={() => handleSizeChange(selectedSizes.filter((s) => s !== size))}
+                    className="ml-1 hover:text-destructive"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </Badge>
+              ))}
+              {(priceRange[0] > 0 || priceRange[1] < MAX_PRICE_FILTER) && (
                 <Badge variant="secondary" className="gap-1">
                   €{priceRange[0]} - €{priceRange[1]}
                   <button
-                    onClick={() => setPriceRange([0, 100])}
+                    onClick={() => handlePriceChange([MIN_PRICE_FILTER, MAX_PRICE_FILTER])}
                     className="ml-1 hover:text-destructive"
                   >
                     <X className="w-3 h-3" />
@@ -667,48 +948,51 @@ export default function ProductsPage() {
 
       <section ref={featuredRef} aria-labelledby="products-grid-heading" className="py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-4 text-sm text-muted-foreground">
-            Showing {filteredAndSortedProducts.length} of {products.length} fragrances
-          </div>
-          <h2 id="products-grid-heading" className="sr-only">
-            Product listing
-          </h2>
-          {filteredAndSortedProducts.length === 0 ? (
-            <Empty>
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <Package className="w-10 h-10" />
-                </EmptyMedia>
-                <EmptyTitle>No fragrances found</EmptyTitle>
-                <EmptyDescription>
-                  No fragrances found matching your criteria. Try adjusting your filters.
-                </EmptyDescription>
-              </EmptyHeader>
-              <EmptyContent>
-                <Button variant="outline" size="lg" onClick={clearFilters}>
-                  Clear Filters
-                </Button>
-              </EmptyContent>
-            </Empty>
-          ) : viewMode === "list" ? (
-            <ul className="flex flex-col gap-4 list-none p-0 m-0" role="list" aria-label="Products">
-              {filteredAndSortedProducts.map((product) => (
-                <ListProduct key={product.id} product={product} featured={isFeatured(product.id)} />
-              ))}
-            </ul>
-          ) : (
-            <ul
-              className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 list-none p-0 m-0"
-              role="list"
-              aria-label="Products"
-            >
-              {filteredAndSortedProducts.map((product) => (
-                <ProductCard key={product.id} product={product} featured={isFeatured(product.id)} />
-              ))}
-            </ul>
-          )}
+          <SectionWrapper loading={false} error={null} loadingType="grid" loadingCount={6}>
+            <div className="mb-4 text-sm text-muted-foreground">
+              Showing {filteredAndSortedProducts.length} of {products.length} fragrances
+            </div>
+            <h2 id="products-grid-heading" className="sr-only">
+              Product listing
+            </h2>
+            {filteredAndSortedProducts.length === 0 ? (
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <Package className="w-10 h-10" />
+                  </EmptyMedia>
+                  <EmptyTitle>No fragrances found</EmptyTitle>
+                  <EmptyDescription>
+                    No fragrances found matching your criteria. Try adjusting your filters.
+                  </EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <Button variant="outline" size="lg" onClick={clearFilters}>
+                    Clear Filters
+                  </Button>
+                </EmptyContent>
+              </Empty>
+            ) : viewMode === "list" ? (
+              <ul className="flex flex-col gap-4 list-none p-0 m-0 overflow-x-hidden" role="list" aria-label="Products">
+                {filteredAndSortedProducts.map((product) => (
+                  <ListProduct key={product.id} product={product} featured={isFeatured(product.id)} />
+                ))}
+              </ul>
+            ) : (
+              <ul
+                className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 list-none p-0 m-0"
+                role="list"
+                aria-label="Products"
+              >
+                {filteredAndSortedProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} featured={isFeatured(product.id)} />
+                ))}
+              </ul>
+            )}
+          </SectionWrapper>
         </div>
       </section>
+      {/* <PerfumeConfigurator open={configuratorOpen} onOpenChange={setConfiguratorOpen} /> */}
     </main>
   );
 }
@@ -731,7 +1015,7 @@ function ListProduct({ product, featured = false }: { product: Product; featured
     e.stopPropagation();
     addItem(product.id, 1);
     setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+    setTimeout(() => setAdded(false), NOTIFICATION_DURATION);
   };
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
@@ -750,31 +1034,31 @@ function ListProduct({ product, featured = false }: { product: Product; featured
 
   return (
     <li className="list-none">
-      <Card className={`flex flex-col sm:flex-row overflow-hidden border border-border shadow-sm hover:shadow-md transition-all duration-300 ${featured ? "border-2 border-[#D4AF37]" : ""}`}>
-        <Link to="/product/$productId" params={{ productId: product.id }} className="block sm:w-72 md:w-96 shrink-0">
-          <figure className="relative aspect-[4/5] sm:aspect-square overflow-hidden bg-muted h-full p-4">
+      <Card className={`flex flex-row overflow-hidden border border-border shadow-sm hover:shadow-md transition-all duration-300 sm:p-6 ${featured ? "border-2 border-[#D4AF37]" : ""}`}>
+        <Link to="/product/$productId" params={{ productId: product.id }} className="block w-24 sm:w-48 md:w-56 shrink-0 overflow-hidden">
+          <figure className="relative aspect-square overflow-hidden bg-muted h-24 sm:h-full p-2 sm:p-4">
             <img src={product.image} alt={`${product.name} fragrance bottle`} className="w-full h-full object-contain" />
           </figure>
         </Link>
-        <div className="flex-1 p-6 flex flex-col">
-          <div className="flex items-start justify-between gap-4 mb-2">
+        <div className="flex-1 p-3 sm:p-6 flex flex-col min-w-0 overflow-hidden">
+          <div className="flex items-start justify-between gap-2 sm:gap-4 mb-2">
             <div>
-              <p className="flex items-center gap-2 mb-2">
-                <Leaf className="w-4 h-4 text-primary shrink-0" aria-hidden="true" />
+              <p className="flex items-center gap-2 mb-1 sm:mb-2">
+                <Leaf className="w-3 h-3 sm:w-4 sm:h-4 text-primary shrink-0" aria-hidden="true" />
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">{product.notes.top}</span>
               </p>
-              <CardTitle className="text-2xl font-heading font-semibold">{product.name}</CardTitle>
+              <CardTitle className="text-lg sm:text-2xl font-heading font-semibold">{product.name}</CardTitle>
             </div>
-            <data value={product.price} className="text-2xl font-heading font-bold text-primary shrink-0">€{product.price}</data>
+            <data value={product.price} className="text-2xl sm:text-5xl font-heading font-bold text-primary shrink-0">€{product.price}</data>
           </div>
 
-          <CardDescription className="text-sm mb-5 leading-relaxed flex-1">{product.description}</CardDescription>
+          <CardDescription className="text-sm mb-3 sm:mb-5 leading-relaxed flex-1 line-clamp-2">{product.description}</CardDescription>
 
-          <CardFooter className="flex items-center justify-between p-0 gap-4 mt-auto">
-            <div className="flex items-center gap-2">
+          <CardFooter className="flex flex-wrap items-center justify-between p-0 gap-2 sm:gap-4 mt-auto">
+            <div className="flex items-center gap-1 sm:gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button size="icon" variant="outline" onClick={handleWishlistToggle} aria-label={isInWishlist ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`} className={isInWishlist ? "text-red-500 border-red-500 hover:text-red-600 hover:border-red-600" : ""}>
+                  <Button size="icon" variant="outline" onClick={handleWishlistToggle} aria-label={isInWishlist ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`} className={`h-8 w-8 sm:h-10 sm:w-10 ${isInWishlist ? "text-red-500 border-red-500 hover:text-red-600 hover:border-red-600" : ""}`}>
                     <Heart className={`w-4 h-4 ${isInWishlist ? "fill-current" : ""}`} />
                   </Button>
                 </TooltipTrigger>
@@ -782,7 +1066,7 @@ function ListProduct({ product, featured = false }: { product: Product; featured
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button size="icon" variant="outline" onClick={handleCompareToggle} aria-label={isInCompare ? `Remove ${product.name} from compare` : `Add ${product.name} to compare`} className={isInCompare ? "text-primary border-primary" : ""}>
+                  <Button size="icon" variant="outline" onClick={handleCompareToggle} aria-label={isInCompare ? `Remove ${product.name} from compare` : `Add ${product.name} to compare`} className={`h-8 w-8 sm:h-10 sm:w-10 ${isInCompare ? "text-primary border-primary" : ""}`}>
                     <Scale className="w-4 h-4" />
                   </Button>
                 </TooltipTrigger>
@@ -790,10 +1074,10 @@ function ListProduct({ product, featured = false }: { product: Product; featured
               </Tooltip>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-1 sm:gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button asChild size="default" variant="outline">
+                  <Button asChild size="sm" variant="outline" className="text-xs sm:text-base px-2 sm:px-4">
                     <Link to="/product/$productId" params={{ productId: product.id }}>Details</Link>
                   </Button>
                 </TooltipTrigger>
@@ -801,8 +1085,8 @@ function ListProduct({ product, featured = false }: { product: Product; featured
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button size="default" onClick={handleAddToCart}>
-                    {added ? <Check className="w-4 h-4 mr-1" aria-hidden="true" /> : <ShoppingBag className="w-4 h-4 mr-1" aria-hidden="true" />}
+                  <Button size="sm" onClick={handleAddToCart} className="text-xs sm:text-base px-2 sm:px-4">
+                    {added ? <Check size={16} className="mr-1 sm:mr-2" aria-hidden="true" /> : <ShoppingBag size={16} className="mr-1 sm:mr-2" aria-hidden="true" />}
                     {added ? "Added" : "Buy"}
                   </Button>
                 </TooltipTrigger>

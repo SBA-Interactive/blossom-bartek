@@ -20,13 +20,25 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { BlurFade } from "@/components/ui/blur-fade";
-import { Link, useParams } from "@tanstack/react-router";
-import { getProductById, getSimilarProducts } from "@/constants/products";
-import { MAX_QUANTITY } from "@/constants/product";
+import { Link, useParams, useNavigate } from "@tanstack/react-router";
+import { getProductById, getSimilarProducts, getRelatedSizes, getAllBaseProducts } from "@/constants/products";
+import { MAX_QUANTITY, BOTTLE_SIZES } from "@/constants/product";
+import { MAX_COMPARE_ITEMS } from "@/constants/filters";
+import { ANIMATION_PAUSE_DELAY, TOAST_LONG_DURATION, NOTIFICATION_DURATION } from "@/constants/timeouts";
+import {
+  BLUR_FADE_DELAY_VERY_SHORT,
+  BLUR_FADE_DELAY_SHORT,
+  BLUR_FADE_DELAY_MEDIUM,
+  BLUR_FADE_DELAY_LONG,
+  BLUR_FADE_DELAY_EXTRA_LONG,
+  BLUR_FADE_DELAY_MAX,
+  BLUR_FADE_DELAY_EXTRA_LONG_2,
+} from "@/constants/animation";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { useCompareStore } from "@/store/useCompareStore";
 import { useSubscriptionStore, SUBSCRIPTION_PLANS } from "@/store/useSubscriptionStore";
+import { useReviewStore } from "@/store/useReviewStore";
 import {
   ArrowLeft,
   Leaf,
@@ -43,10 +55,16 @@ import {
   Recycle,
   HeartHandshake,
   GitCompare,
+  Star,
+  MessageCircle,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { SectionWrapper } from "@/components/section-wrapper";
+import { useAsyncDataWithRetry } from "@/components/use-async-data";
+import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import FAQ from "@/components/FAQ";
+import ReviewSection from "@/components/ReviewSection";
 
 const certificateIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   "Eco Certified": Recycle,
@@ -95,7 +113,7 @@ function LiveRegion({ message }: { message: string }) {
   useEffect(() => {
     if (message) {
       setAnnounce(message);
-      const timer = setTimeout(() => setAnnounce(""), 1000);
+      const timer = setTimeout(() => setAnnounce(""), ANIMATION_PAUSE_DELAY);
       return () => clearTimeout(timer);
     }
   }, [message]);
@@ -126,6 +144,8 @@ function LongDescription({ text }: { text: string }) {
 export default function ProductDetailPage() {
   const { productId } = useParams({ from: "/product/$productId" });
   const [quantity, setQuantity] = useState(1);
+  const [selectedSizeId, setSelectedSizeId] = useState<string>("");
+  const [selectedScentId, setSelectedScentId] = useState<string>("");
   const [notification, setNotification] = useState("");
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [isInCompare, setIsInCompare] = useState(false);
@@ -139,9 +159,66 @@ export default function ProductDetailPage() {
   const isInCompareStore = useCompareStore((state) => state.isInCompare);
   const items = useCompareStore((state) => state.items);
   const { currentTier, applyDiscount, getDiscount } = useSubscriptionStore();
+  const getAverageRating = useReviewStore((state) => state.getAverageRating);
+  const getReviewCount = useReviewStore((state) => state.getReviewCount);
 
-  const product = getProductById(productId);
-  const similarProducts = getSimilarProducts(productId, 4);
+  const { data: product, loading: loadingProduct, error: errorProduct, refetch: refetchProduct } = useAsyncDataWithRetry({
+    fetchFn: () => getProductById(productId),
+    deps: [productId],
+  });
+
+  const { data: similarProducts, loading: loadingSimilar, error: errorSimilar, refetch: refetchSimilar } = useAsyncDataWithRetry({
+    fetchFn: () => getSimilarProducts(productId, 4),
+    deps: [productId],
+  });
+
+  const relatedSizes = useMemo(() => getRelatedSizes(productId), [productId]);
+  const allScents = useMemo(() => getAllBaseProducts(), []);
+
+  useEffect(() => {
+    if (product && !selectedSizeId) {
+      setSelectedSizeId(product.sizeId);
+    }
+  }, [product, selectedSizeId]);
+
+  useEffect(() => {
+    if (product && !selectedScentId) {
+      setSelectedScentId(product.baseProductId || product.id);
+    }
+  }, [product, selectedScentId]);
+
+  const currentProduct = useMemo(() => {
+    if (!product) return null;
+    if (selectedScentId && selectedSizeId) {
+      return allScents.find((p) => (p.baseProductId === selectedScentId || p.id === selectedScentId) && p.sizeId === selectedSizeId) || product;
+    }
+    return product;
+  }, [product, allScents, selectedScentId, selectedSizeId]);
+
+  const navigate = useNavigate();
+
+  const currentBaseProductId = product?.baseProductId || product?.id;
+
+  useEffect(() => {
+    if (selectedScentId && currentBaseProductId && selectedScentId !== currentBaseProductId) {
+      const firstSize = relatedSizes[0]?.sizeId;
+      if (firstSize) {
+        const matchingProduct = allScents.find(
+          (p) => (p.baseProductId === selectedScentId || p.id === selectedScentId) && p.sizeId === firstSize
+        );
+        if (matchingProduct && matchingProduct.id !== productId) {
+          navigate({
+            to: "/product/$productId",
+            params: { productId: matchingProduct.id },
+          });
+        }
+      }
+    }
+  }, [selectedScentId, currentBaseProductId, allScents, relatedSizes, productId, navigate]);
+
+  const rating = product ? getAverageRating(productId) : 0;
+  const reviewCount = product ? getReviewCount(productId) : 0;
+
   const hasDiscount = currentTier !== "free";
   const discountedPrice = applyDiscount(product?.price || 0);
   const discountPercentage = getDiscount();
@@ -154,29 +231,30 @@ export default function ProductDetailPage() {
   }, [productId, isInWishlistStore, isInCompareStore]);
 
   const handleAddToCart = () => {
-    if (product) {
-      addItemToCart(productId, quantity);
-      setNotification(
-        `${product.name} added to cart. ${quantity} item(s) - €${product.price * quantity}`,
-      );
-      setTimeout(() => {
-        setNotification("");
-      }, 3000);
+    if (currentProduct) {
+      addItemToCart(currentProduct.id, quantity);
+      toast.success(`${currentProduct.name} added to cart. ${quantity} item(s) - €${currentProduct.price * quantity}`);
     }
   };
 
   const handleBuyNow = () => {
-    if (product) {
-      addItemToCart(productId, quantity);
+    if (currentProduct) {
+      addItemToCart(currentProduct.id, quantity);
       window.location.href = "/cart";
     }
   };
 
   const handleQuantityChange = (newQty: number) => {
-    const maxAllowed = Math.min(MAX_QUANTITY, product.stock);
+    const maxAllowed = Math.min(MAX_QUANTITY, currentProduct?.stock || 0);
     if (newQty >= 1 && newQty <= maxAllowed) {
       setQuantity(newQty);
     }
+  };
+
+  const reviewsRef = useRef<HTMLHeadingElement>(null);
+
+  const handleScrollToReviews = () => {
+    reviewsRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleShare = async () => {
@@ -184,16 +262,15 @@ export default function ProductDetailPage() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: product?.name,
-          text: `Check out ${product?.name} - ${product?.description}`,
+          title: currentProduct?.name,
+          text: `Check out ${currentProduct?.name} - ${currentProduct?.description}`,
           url,
         });
       } catch {
       }
     } else {
       await navigator.clipboard.writeText(url);
-      setNotification("Link copied to clipboard");
-      setTimeout(() => setNotification(""), 2000);
+      toast.success("Link copied to clipboard");
     }
   };
 
@@ -203,12 +280,11 @@ export default function ProductDetailPage() {
       setIsInWishlist(newState);
       if (newState) {
         addToWishlist(productId);
-        setNotification(`${product.name} added to wishlist`);
+        toast.success(`${product.name} added to wishlist`);
       } else {
         removeFromWishlist(productId);
-        setNotification(`${product.name} removed from wishlist`);
+        toast.success(`${product.name} removed from wishlist`);
       }
-      setTimeout(() => setNotification(""), 2000);
     }
   };
 
@@ -217,17 +293,16 @@ export default function ProductDetailPage() {
       const newState = !isInCompare;
       setIsInCompare(newState);
       if (newState) {
-        if (items.length >= 4) {
-          setNotification(`Maximum 4 products can be compared. Remove one first.`);
+        if (items.length >= MAX_COMPARE_ITEMS) {
+          toast.error(`Maximum ${MAX_COMPARE_ITEMS} products can be compared. Remove one first.`);
         } else {
           addToCompare(productId);
-          setNotification(`${product.name} added to compare`);
+          toast.success(`${product.name} added to compare`);
         }
       } else {
         removeFromCompare(productId);
-        setNotification(`${product.name} removed from compare`);
+        toast.success(`${product.name} removed from compare`);
       }
-      setTimeout(() => setNotification(""), 2000);
     }
   };
 
@@ -237,6 +312,36 @@ export default function ProductDetailPage() {
       setIsInCompare(isInCompareStore(productId));
     }
   }, [productId, isInWishlistStore, isInCompareStore, items]);
+
+  if (loadingProduct || loadingSimilar) {
+    return (
+      <>
+        <SkipLink />
+        <main className="pt-24 min-h-screen flex items-center justify-center">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
+            <SectionWrapper loading={true} loadingType="card">
+              <div />
+            </SectionWrapper>
+          </div>
+        </main>
+      </>
+    );
+  }
+
+  if (errorProduct) {
+    return (
+      <>
+        <SkipLink />
+        <main className="pt-24 min-h-screen flex items-center justify-center">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
+            <SectionWrapper loading={false} error={errorProduct} onRetry={refetchProduct} loadingType="card">
+              <div />
+            </SectionWrapper>
+          </div>
+        </main>
+      </>
+    );
+  }
 
   if (!product) {
     return (
@@ -290,7 +395,7 @@ export default function ProductDetailPage() {
                   </BreadcrumbItem>
                   <BreadcrumbSeparator aria-hidden="true" />
                   <BreadcrumbItem>
-                    <BreadcrumbPage className="font-medium">{product.name}</BreadcrumbPage>
+                    <BreadcrumbPage className="font-medium">{currentProduct?.name}</BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
@@ -300,8 +405,8 @@ export default function ProductDetailPage() {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
             <BlurFade inView>
               <section aria-labelledby="product-image-heading" className="relative">
-                <h2 id="product-image-heading" className="sr-only">
-                  {product.name} image gallery
+                  <h2 id="product-image-heading" className="sr-only">
+                  {currentProduct?.name} image gallery
                 </h2>
                 <div
                   className="absolute inset-0 bg-linear-to-br from-primary/10 to-secondary/10 rounded-3xl blur-3xl"
@@ -312,33 +417,37 @@ export default function ProductDetailPage() {
                     <CarouselItem>
                       <div className="relative aspect-square rounded-2xl overflow-hidden bg-secondary/30">
                         <img
-                          src={product.image}
-                          alt={`${product.name} - Front view`}
+                          src={currentProduct?.image}
+                          alt={`${currentProduct?.name} - Front view`}
                           className="w-full h-full object-cover"
                         />
                         <Badge className="absolute top-4 left-4" variant="default">
-                          {product.badge}
+                          {currentProduct?.badge}
                         </Badge>
                       </div>
                     </CarouselItem>
-                    <CarouselItem>
-                      <div className="relative aspect-square rounded-2xl overflow-hidden bg-secondary/30">
-                        <img
-                          src={product.image}
-                          alt={`${product.name} - Side view`}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </CarouselItem>
-                    <CarouselItem>
-                      <div className="relative aspect-square rounded-2xl overflow-hidden bg-secondary/30">
-                        <img
-                          src={product.image}
-                          alt={`${product.name} - Back view`}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </CarouselItem>
+                    {currentBaseProductId === "tropical-sun" && (
+                      <CarouselItem>
+                        <div className="relative aspect-square rounded-2xl overflow-hidden bg-secondary/30">
+                          <img
+                            src="/product_poster_tropical_sun_small.png"
+                            alt={`${currentProduct?.name} - Poster`}
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                      </CarouselItem>
+                    )}
+                    {currentBaseProductId === "rose-petal" && (
+                      <CarouselItem>
+                        <div className="relative aspect-square rounded-2xl overflow-hidden bg-secondary/30">
+                          <img
+                            src="/product_poster_rose_petal.png"
+                            alt={`${currentProduct?.name} - Poster`}
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                      </CarouselItem>
+                    )}
                   </CarouselContent>
                   <CarouselPrevious className="left-4" />
                   <CarouselNext className="right-4" />
@@ -346,7 +455,7 @@ export default function ProductDetailPage() {
               </section>
             </BlurFade>
 
-            <BlurFade delay={0.2} inView>
+            <BlurFade delay={BLUR_FADE_DELAY_MEDIUM} inView>
               <section aria-labelledby="product-info-heading">
                 <h2 id="product-info-heading" className="sr-only">
                   Product information
@@ -354,12 +463,12 @@ export default function ProductDetailPage() {
                 <div className="flex items-center gap-2 mb-2">
                   <Leaf className="w-4 h-4 text-primary" aria-hidden="true" />
                   <span className="text-sm text-muted-foreground uppercase tracking-wider">
-                    {product.category} · {product.size}
+                    {currentProduct?.category} · {currentProduct?.size || product.size}
                   </span>
                 </div>
 
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-bold text-foreground mb-4">
-                  {product.name}
+                  {currentProduct?.name}
                 </h1>
 
                 <div className="mb-4">
@@ -369,7 +478,7 @@ export default function ProductDetailPage() {
                         €{discountedPrice.toFixed(2)}
                       </span>
                       <span className="text-lg text-muted-foreground line-through">
-                        €{product.price}
+                        €{currentProduct?.price}
                       </span>
                       <Badge variant="secondary" className="text-xs">
                         {discountPercentage}% off
@@ -377,19 +486,57 @@ export default function ProductDetailPage() {
                     </div>
                   ) : (
                     <span className="text-2xl sm:text-3xl font-heading font-bold text-primary">
-                      €{product.price}
+                      €{currentProduct?.price || product.price}
                     </span>
                   )}
                 </div>
 
                 <p className="text-muted-foreground leading-relaxed mb-6">
-                  {product.description}
+                  {currentProduct?.description || product.description}
                 </p>
+
+                {allScents.length > 1 && (
+                  <div className="mb-4">
+                    <label htmlFor="scent-select" className="text-sm text-muted-foreground mb-2 block">Scent:</label>
+                    <select
+                      id="scent-select"
+                      value={selectedScentId || ""}
+                      onChange={(e) => setSelectedScentId(e.target.value)}
+                      className="w-full p-2 rounded-lg border border-input bg-background"
+                    >
+                      {allScents.filter((p, i, arr) => arr.findIndex(x => x.baseProductId === p.baseProductId || x.id === p.baseProductId) === i).map((scent) => (
+                        <option key={scent.baseProductId || scent.id} value={scent.baseProductId || scent.id}>
+                          {scent.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {relatedSizes.length > 1 && (
+                  <div className="mb-6">
+                    <span className="text-sm text-muted-foreground mb-2 block">Bottle Size:</span>
+                    <div className="flex gap-2" role="group" aria-label="Bottle size selector">
+                      {relatedSizes.map((size) => (
+                        <Button
+                          key={size.sizeId}
+                          variant={selectedSizeId === size.sizeId ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setSelectedSizeId(size.sizeId)}
+                          className="flex-1"
+                        >
+                          {size.size}
+                          <span className="block text-xs opacity-70">€{size.price}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="mb-6">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-sm text-muted-foreground">Quantity:</span>
-                    <span className="text-sm text-muted-foreground">limit: {Math.min(MAX_QUANTITY, product.stock)}</span>
+                    <span className="text-sm text-muted-foreground">limit: {Math.min(MAX_QUANTITY, currentProduct?.stock || product?.stock)}</span>
                   </div>
                   <div className="flex items-center gap-2 mb-3">
                     <div className="flex items-center" role="group" aria-label="Quantity selector">
@@ -404,18 +551,25 @@ export default function ProductDetailPage() {
                         −
                       </Button>
                       <input
-                        type="number"
-                        min={1}
-                        max={MAX_QUANTITY}
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[1-9][0-9]*"
                         value={quantity}
-                        onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value);
+                          if (!isNaN(val) && val >= 1) {
+                            handleQuantityChange(Math.min(val, MAX_QUANTITY));
+                          } else if (e.target.value === "") {
+                            handleQuantityChange(1);
+                          }
+                        }}
                         className="w-16 h-10 flex items-center justify-center text-lg font-medium text-center border-y border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                       <Button
                         variant="outline"
                         size="icon"
                         onClick={() => handleQuantityChange(quantity + 1)}
-                        disabled={quantity >= Math.min(MAX_QUANTITY, product.stock)}
+                        disabled={quantity >= Math.min(MAX_QUANTITY, currentProduct?.stock || product?.stock)}
                         aria-label="Increase quantity"
                         className="w-10 h-10"
                       >
@@ -423,8 +577,45 @@ export default function ProductDetailPage() {
                       </Button>
                     </div>
                     <span className="text-sm text-muted-foreground">
-                      ({product.stock} available in stock)
+                      ({currentProduct?.stock || product?.stock} available in stock)
                     </span>
+                  </div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`w-4 h-4 ${
+                            star <= Math.round(rating)
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "text-muted-foreground"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm font-medium">{rating > 0 ? rating.toFixed(1) : "No"}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {rating > 0 ? `(${reviewCount} reviews)` : "reviews yet"}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => document.getElementById("reviews-heading")?.scrollIntoView({ behavior: "smooth" })}
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      {reviewCount > 0 ? "Read Reviews" : "Write a Review"}
+                    </Button>
+                  </div>
+                  <div className="mb-3">
+                    <span className="text-2xl font-heading font-bold text-primary">
+                      €{((currentProduct?.price || product?.price) * quantity).toFixed(2)}
+                    </span>
+                    {quantity > 1 && (
+                      <span className="text-sm text-muted-foreground ml-2">
+                        (€{((currentProduct?.price || product?.price)).toFixed(2)} each)
+                      </span>
+                    )}
                   </div>
                   <div className="flex sm:flex-row gap-2">
                     <Button
@@ -528,7 +719,7 @@ export default function ProductDetailPage() {
             </BlurFade>
           </div>
 
-          <BlurFade delay={0.3} inView>
+          <BlurFade delay={BLUR_FADE_DELAY_LONG} inView>
             <section id="certificates" aria-labelledby="certificates-heading" className="mt-16">
               <h2
                 id="certificates-heading"
@@ -538,24 +729,24 @@ export default function ProductDetailPage() {
                 Certificates & Certifications
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                {product.certificates.map((cert) => {
-                  const IconComponent = certificateIcons[cert] || Award;
-                  return (
-                    <Card key={cert} className="text-center p-4 bg-muted/50">
-                      <CardContent className="p-0">
-                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                          <IconComponent className="w-6 h-6 text-primary" aria-hidden="true" />
-                        </div>
-                        <span className="text-sm font-medium">{cert}</span>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+                  {currentProduct?.certificates.map((cert) => {
+                   const IconComponent = certificateIcons[cert] || Award;
+                   return (
+                     <Card key={cert} className="text-center p-4 bg-muted/50">
+                       <CardContent className="p-0">
+                         <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                           <IconComponent className="w-6 h-6 text-primary" aria-hidden="true" />
+                         </div>
+                         <span className="text-sm font-medium">{cert}</span>
+                       </CardContent>
+                     </Card>
+                   );
+                 })}
               </div>
             </section>
           </BlurFade>
 
-          <BlurFade delay={0.35} inView>
+          <BlurFade delay={BLUR_FADE_DELAY_EXTRA_LONG} inView>
             <section aria-labelledby="about-heading" className="mt-16">
               <div className="flex gap-4 text-sm mb-4">
                 <a
@@ -576,11 +767,11 @@ export default function ProductDetailPage() {
               <h2 id="about-heading" className="text-2xl font-heading font-bold mb-6">
                 About This Fragrance
               </h2>
-              <LongDescription text={product.longDescription} />
+                <LongDescription text={currentProduct?.longDescription} />
             </section>
           </BlurFade>
 
-          <BlurFade delay={0.4} inView>
+          <BlurFade delay={BLUR_FADE_DELAY_EXTRA_LONG_2} inView>
             <section id="product-details" aria-labelledby="details-heading" className="mt-16">
               <h2 id="details-heading" className="text-2xl font-heading font-bold mb-6">
                 Product Details
@@ -594,15 +785,15 @@ export default function ProductDetailPage() {
                   <div className="grid grid-cols-3 gap-4">
                     <div className="p-4 bg-muted rounded-lg">
                       <span className="block text-xs text-muted-foreground uppercase mb-2">Top Notes</span>
-                      <span className="text-sm font-medium">{product.notes.top}</span>
+                      <span className="text-sm font-medium">{currentProduct?.notes.top}</span>
                     </div>
                     <div className="p-4 bg-muted rounded-lg">
                       <span className="block text-xs text-muted-foreground uppercase mb-2">Heart Notes</span>
-                      <span className="text-sm font-medium">{product.notes.heart}</span>
+                      <span className="text-sm font-medium">{currentProduct?.notes.heart}</span>
                     </div>
                     <div className="p-4 bg-muted rounded-lg">
                       <span className="block text-xs text-muted-foreground uppercase mb-2">Base Notes</span>
-                      <span className="text-sm font-medium">{product.notes.base}</span>
+                      <span className="text-sm font-medium">{currentProduct?.notes.base}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -617,14 +808,14 @@ export default function ProductDetailPage() {
                           <Package className="w-4 h-4 text-primary" />
                           Bottle Size
                         </td>
-                        <td className="py-4 px-6 text-muted-foreground">{product.size}</td>
+                        <td className="py-4 px-6 text-muted-foreground">{currentProduct?.size}</td>
                       </tr>
                       <tr className="border-b">
                         <td className="py-4 px-6 font-medium flex items-center gap-2">
                           <Droplets className="w-4 h-4 text-primary" />
                           Net Quantity
                         </td>
-                        <td className="py-4 px-6 text-muted-foreground">{product.size}</td>
+                        <td className="py-4 px-6 text-muted-foreground">{currentProduct?.size}</td>
                       </tr>
                       <tr className="border-b">
                         <td className="py-4 px-6 font-medium flex items-center gap-2">
@@ -645,42 +836,42 @@ export default function ProductDetailPage() {
                           <Shield className="w-4 h-4 text-primary" />
                           Batch Number
                         </td>
-                        <td className="py-4 px-6 text-muted-foreground font-mono text-sm">BATCH-{product.id.toUpperCase()}</td>
+                        <td className="py-4 px-6 text-muted-foreground font-mono text-sm">BATCH-{currentProduct?.id.toUpperCase()}</td>
                       </tr>
                       <tr className="border-b">
                         <td className="py-4 px-6 font-medium flex items-center gap-2">
                           <Clock className="w-4 h-4 text-primary" />
                           Last 30 Days Price
                         </td>
-                        <td className="py-4 px-6 text-muted-foreground">€{product.price} (Current)</td>
+                        <td className="py-4 px-6 text-muted-foreground">€{currentProduct?.price} (Current)</td>
                       </tr>
                       <tr className="border-b">
                         <td className="py-4 px-6 font-medium flex items-center gap-2">
                           <Droplets className="w-4 h-4 text-primary" />
                           How to Use
                         </td>
-                        <td className="py-4 px-6 text-muted-foreground">{product.howToUse}</td>
+                        <td className="py-4 px-6 text-muted-foreground">{currentProduct?.howToUse}</td>
                       </tr>
                       <tr className="border-b">
                         <td className="py-4 px-6 font-medium flex items-center gap-2">
                           <Package className="w-4 h-4 text-primary" />
                           Ingredients
                         </td>
-                        <td className="py-4 px-6 text-muted-foreground font-mono text-sm">{product.ingredients}</td>
+                        <td className="py-4 px-6 text-muted-foreground font-mono text-sm">{currentProduct?.ingredients}</td>
                       </tr>
                       <tr className="border-b">
                         <td className="py-4 px-6 font-medium flex items-center gap-2">
                           <Shield className="w-4 h-4 text-primary" />
                           Storage
                         </td>
-                        <td className="py-4 px-6 text-muted-foreground">{product.storage}</td>
+                        <td className="py-4 px-6 text-muted-foreground">{currentProduct?.storage}</td>
                       </tr>
                       <tr className="border-b">
                         <td className="py-4 px-6 font-medium flex items-center gap-2">
                           <Clock className="w-4 h-4 text-primary" />
                           Lifespan
                         </td>
-                        <td className="py-4 px-6 text-muted-foreground">{product.lifespan}</td>
+                        <td className="py-4 px-6 text-muted-foreground">{currentProduct?.lifespan}</td>
                       </tr>
                       <tr>
                         <td className="py-4 px-6 font-medium flex items-center gap-2">
@@ -698,8 +889,9 @@ export default function ProductDetailPage() {
 
           <FAQ />
 
-          {similarProducts.length > 0 && (
-            <BlurFade delay={0.5} inView>
+          <SectionWrapper loading={loadingSimilar} error={errorSimilar} onRetry={refetchSimilar}>
+            {similarProducts && similarProducts.length > 0 && (
+              <BlurFade delay={BLUR_FADE_DELAY_MAX} inView>
               <section aria-labelledby="similar-heading" className="mt-16">
                 <h2
                   id="similar-heading"
@@ -715,7 +907,10 @@ export default function ProductDetailPage() {
                 </div>
               </section>
             </BlurFade>
-          )}
+            )}
+          </SectionWrapper>
+
+          <ReviewSection productId={productId} />
         </div>
       </main>
       <LiveRegion message={notification} />

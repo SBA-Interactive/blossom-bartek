@@ -1,0 +1,4 @@
+export const TOAST_DURATION = 2000;
+export const TOAST_LONG_DURATION = 3000;
+export const NOTIFICATION_DURATION = 2000;
+export const ANIMATION_PAUSE_DELAY = 1000;

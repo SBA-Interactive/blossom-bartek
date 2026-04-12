@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { FileText } from "lucide-react";
+import { SectionWrapper } from "@/components/section-wrapper";
 
 const sections = [
   {
@@ -71,21 +72,22 @@ const sections = [
 export default function TermsPage() {
   return (
     <main className="pt-24">
-      <section className="py-16 bg-secondary">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <BlurFade inView>
-            <header className="max-w-3xl mx-auto text-center">
-              <Avatar className="w-16 h-16 bg-primary/10 mx-auto mb-4">
-                <AvatarFallback className="bg-primary/10">
-                  <FileText className="w-8 h-8 text-primary" />
-                </AvatarFallback>
-              </Avatar>
-              <h1 className="text-4xl sm:text-5xl font-heading font-bold text-foreground mb-4">
-                Terms of Service
-              </h1>
-              <p className="text-muted-foreground">Last updated: March 2026</p>
-            </header>
-          </BlurFade>
+      <SectionWrapper loading={false} error={null}>
+        <section className="py-16 bg-secondary">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <BlurFade inView>
+              <header className="max-w-3xl mx-auto text-center">
+                <Avatar className="w-16 h-16 bg-primary/10 mx-auto mb-4">
+                  <AvatarFallback className="bg-primary/10">
+                    <FileText className="w-8 h-8 text-primary" />
+                  </AvatarFallback>
+                </Avatar>
+                <h1 className="text-4xl sm:text-5xl font-heading font-bold text-foreground mb-4">
+                  Terms of Service
+                </h1>
+                <p className="text-muted-foreground">Last updated: March 2026</p>
+              </header>
+            </BlurFade>
         </div>
       </section>
 
@@ -128,6 +130,7 @@ export default function TermsPage() {
           </Card>
         </div>
       </section>
+      </SectionWrapper>
     </main>
   );
 }

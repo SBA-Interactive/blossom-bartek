@@ -1,4 +1,6 @@
 import React from "react";
+import { useMemo, useCallback } from "react";
+import { SectionWrapper } from "@/components/section-wrapper";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -41,9 +43,13 @@ function WishlistItemCard({ item }: { item: ReturnType<typeof useWishlistStore.g
   const removeItem = useWishlistStore((state) => state.removeItem);
   const addItem = useCartStore((state) => state.addItem);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = useCallback(() => {
     addItem(item.productId, 1);
-  };
+  }, [addItem, item.productId]);
+
+  const handleRemove = useCallback(() => {
+    removeItem(item.productId);
+  }, [removeItem, item.productId]);
 
   return (
     <Card className="overflow-hidden">
@@ -82,7 +88,7 @@ function WishlistItemCard({ item }: { item: ReturnType<typeof useWishlistStore.g
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => removeItem(item.productId)}
+                onClick={handleRemove}>
               >
                 <Trash2 className="w-4 h-4 text-destructive" />
               </Button>
@@ -103,52 +109,54 @@ export default function WishlistPage() {
       <SkipLink />
       <main className="pt-24 min-h-screen" id="wishlist-main-content">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
-          <BlurFade inView>
-            <header className="flex items-center gap-3 mb-8">
-              <Avatar className="w-12 h-12 bg-primary/10">
-                <AvatarFallback className="bg-primary/10">
-                  <Heart className="w-6 h-6 text-primary" aria-hidden="true" />
-                </AvatarFallback>
-              </Avatar>
-              <h1 className="text-3xl sm:text-4xl font-heading font-bold text-foreground">
-                Wishlist
-              </h1>
-              {items.length > 0 && (
-                <Badge variant="secondary" className="ml-2">
-                  {items.length} {items.length === 1 ? "item" : "items"}
-                </Badge>
-              )}
-            </header>
+          <SectionWrapper loading={false} error={null}>
+            <BlurFade inView>
+              <header className="flex items-center gap-3 mb-8">
+                <Avatar className="w-12 h-12 bg-primary/10">
+                  <AvatarFallback className="bg-primary/10">
+                    <Heart className="w-6 h-6 text-primary" aria-hidden="true" />
+                  </AvatarFallback>
+                </Avatar>
+                <h1 className="text-3xl sm:text-4xl font-heading font-bold text-foreground">
+                  Wishlist
+                </h1>
+                {items.length > 0 && (
+                  <Badge variant="secondary" className="ml-2">
+                    {items.length} {items.length === 1 ? "item" : "items"}
+                  </Badge>
+                )}
+              </header>
 
-            {items.length === 0 ? (
-              <Empty>
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <Heart className="w-10 h-10" />
-                  </EmptyMedia>
-                  <EmptyTitle>Your wishlist is empty</EmptyTitle>
-                  <EmptyDescription>
-                    Save your favorite fragrances to buy later.
-                  </EmptyDescription>
-                </EmptyHeader>
-                <EmptyContent>
-                  <Button asChild size="lg">
-                    <Link to="/products">
-                      <Package className="mr-2 w-4 h-4" />
-                      Browse Products
-                      <ArrowRight className="ml-2 w-4 h-4" />
-                    </Link>
-                  </Button>
-                </EmptyContent>
-              </Empty>
-            ) : (
-              <div className="space-y-4">
-                {items.map((item) => (
-                  <WishlistItemCard key={item.id} item={item} />
-                ))}
-              </div>
-            )}
-          </BlurFade>
+              {items.length === 0 ? (
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <Heart className="w-10 h-10" />
+                    </EmptyMedia>
+                    <EmptyTitle>Your wishlist is empty</EmptyTitle>
+                    <EmptyDescription>
+                      Save your favorite fragrances to buy later.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                  <EmptyContent>
+                    <Button asChild size="lg">
+                      <Link to="/products">
+                        <Package className="mr-2 w-4 h-4" />
+                        Browse Products
+                        <ArrowRight className="ml-2 w-4 h-4" />
+                      </Link>
+                    </Button>
+                  </EmptyContent>
+                </Empty>
+              ) : (
+                <div className="space-y-4">
+                  {items.map((item) => (
+                    <WishlistItemCard key={item.id} item={item} />
+                  ))}
+                </div>
+              )}
+            </BlurFade>
+          </SectionWrapper>
         </div>
       </main>
     </>

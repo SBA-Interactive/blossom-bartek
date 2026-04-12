@@ -8,6 +8,12 @@ import { MorphingText } from "@/components/ui/morphing-text";
 import { NumberTicker } from "@/components/ui/number-ticker";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Leaf, Flower2 } from "lucide-react";
+import {
+  BLUR_FADE_DELAY_MEDIUM,
+  BLUR_FADE_DELAY_LONG,
+  BLUR_FADE_DELAY_EXTRA_LONG,
+  BLUR_FADE_DELAY_MAX,
+} from "@/constants/animation";
 
 export function Hero() {
   return (
@@ -15,15 +21,16 @@ export function Hero() {
       aria-label="Welcome to Blossom"
       className="relative min-h-[90vh] flex items-center overflow-hidden bg-hero-bg text-hero-text pb-12"
     >
-      <video
-        aria-hidden
-        muted
-        loop
-        playsInline
-        autoPlay
-        poster="/perfume.png"
-        className="z-10 absolute inset-0 w-full h-full object-cover grayscale sepia-125"
-      >
+<video
+          aria-hidden
+          muted
+          loop
+          playsInline
+          autoPlay
+          preload="none"
+          poster="/poster.png"
+          className="z-10 absolute inset-0 w-full h-full object-cover grayscale sepia-125"
+        >
         <source src="/hero.webm" type="video/mp4" />
       </video>
       <div
@@ -33,7 +40,7 @@ export function Hero() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-24">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div className="space-y-8">
-            <BlurFade delay={0.2} inView>
+            <BlurFade delay={BLUR_FADE_DELAY_MEDIUM}>
               <h1 className="text-hero-text text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-heading font-bold leading-tight">
                 <span className="text-shadow text-shadow-zinc-950 text-shadow-2xl">Fresh Scents from{" "}</span>
                 <AnimatedGradientText colorFrom="#fbbf24" colorTo="#f97316">
@@ -42,14 +49,14 @@ export function Hero() {
               </h1>
             </BlurFade>
 
-            <BlurFade delay={0.3} inView>
+<BlurFade delay={BLUR_FADE_DELAY_LONG}>
               <p className="text-hero-text/70 text-base sm:text-lg max-w-lg leading-relaxed">
                 Discover our collection of natural, eco-friendly perfumes crafted from upcycled
                 fruit peels. Fresh, modern scents that are safe for everyday use.
               </p>
             </BlurFade>
 
-            <BlurFade delay={0.4} inView>
+            <BlurFade delay={BLUR_FADE_DELAY_EXTRA_LONG}>
               <div className="flex flex-col sm:flex-row flex-wrap gap-4">
                 <Button
                   size="lg"
@@ -75,7 +82,7 @@ export function Hero() {
               </div>
             </BlurFade>
 
-            <BlurFade delay={0.5} inView>
+            <BlurFade delay={BLUR_FADE_DELAY_MAX}>
               <div className="flex flex-col items-start justify-center w-full">
                 <div className="w-full bg-black/25 rounded-2xl p-4 sm:p-6 pb-0! flex flex-col items-center sm:items-start gap-4">
                   <dl className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8 w-full">
@@ -121,13 +128,15 @@ export function Hero() {
             </BlurFade>
           </div>
 
-          <BlurFade delay={0.3} inView>
+<BlurFade delay={BLUR_FADE_DELAY_LONG}>
             <figure className="relative flex justify-center lg:justify-end">
-              <div className="relative w-full max-w-md lg:max-w-lg">
+              <div className="relative w-full max-w-md lg:max-w-lg aspect-[3/4]">
                 <img
                   src="/perfume.png"
                   alt="Blossom natural perfume bottle with fruit peel ingredients"
-                  className="relative z-10 w-full h-auto rounded-2xl border-0"
+                  loading="eager"
+                  fetchPriority="high"
+                  className="relative z-10 w-full h-full object-contain rounded-2xl border-0"
                 />
               </div>
               <figcaption className="sr-only">

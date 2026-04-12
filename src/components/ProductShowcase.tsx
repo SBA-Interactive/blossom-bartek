@@ -17,6 +17,12 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Leaf, Flower2, ShoppingBag, Heart, Scale } from "lucide-react";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { useCompareStore } from "@/store/useCompareStore";
+import {
+  BLUR_FADE_DELAY_SHORT,
+  BLUR_FADE_DELAY_MEDIUM,
+  BLUR_FADE_DELAY_EXTRA_LONG_2,
+  ANIMATED_LIST_DELAY,
+} from "@/constants/animation";
 
 const products = [
   {
@@ -216,7 +222,7 @@ export function ProductShowcase() {
               Featured
             </Badge>
           </BlurFade>
-          <BlurFade delay={0.1} inView>
+          <BlurFade delay={BLUR_FADE_DELAY_SHORT} inView>
             <h2
               id="showcase-heading"
               className="text-3xl sm:text-4xl font-heading font-bold text-foreground mb-4"
@@ -224,7 +230,7 @@ export function ProductShowcase() {
               Our Signature Collection
             </h2>
           </BlurFade>
-          <BlurFade delay={0.2} inView>
+          <BlurFade delay={BLUR_FADE_DELAY_MEDIUM} inView>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Each fragrance is crafted from carefully selected fruit peels, delivering unique
               scents that are both natural and luxurious.
@@ -232,7 +238,7 @@ export function ProductShowcase() {
           </BlurFade>
         </header>
 
-        <AnimatedList delay={0.2}>
+        <AnimatedList delay={ANIMATED_LIST_DELAY}>
           <ul
             className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 list-none p-0 m-0"
             role="list"
@@ -244,7 +250,7 @@ export function ProductShowcase() {
           </ul>
         </AnimatedList>
 
-        <BlurFade delay={0.4} inView>
+        <BlurFade delay={BLUR_FADE_DELAY_EXTRA_LONG_2} inView>
           <div className="text-center mt-12">
             <Separator className="mb-8" />
             <Button

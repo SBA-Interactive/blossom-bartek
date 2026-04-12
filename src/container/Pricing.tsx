@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Link } from "@tanstack/react-router";
 import { Check, Sparkles, Star, Crown, ArrowRight } from "lucide-react";
 import { BlurFade } from "@/components/ui/blur-fade";
@@ -27,6 +27,7 @@ import {
   type SubscriptionTier,
   type BillingCycle,
 } from "@/store/useSubscriptionStore";
+import { SectionWrapper } from "@/components/section-wrapper";
 
 const tierIcons = {
   free: "Free",
@@ -49,21 +50,25 @@ const tierBgColors = {
   vip: "hover:border-amber-500/50",
 };
 
-export default function PricingPage() {
+export default function PricingPage({ showHeader = true }: { showHeader?: boolean }) {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
   const { currentTier, setTier } = useSubscriptionStore();
 
-  const currentPlan = SUBSCRIPTION_PLANS.find((p) => p.id === currentTier);
+  const currentPlan = useMemo(() => SUBSCRIPTION_PLANS.find((p) => p.id === currentTier), [currentTier]);
 
-  const handleSelectPlan = (tier: SubscriptionTier) => {
+  const handleSelectPlan = useCallback((tier: SubscriptionTier) => {
     if (tier === "free") {
       setTier("free");
     } else {
       setTier(tier);
     }
-  };
+  }, [setTier]);
 
-  const getIconComponent = (iconName: string) => {
+  const handleBillingCycleChange = useCallback((v: string) => {
+    setBillingCycle(v as BillingCycle);
+  }, []);
+
+  const getIconComponent = useCallback((iconName: string) => {
     switch (iconName) {
       case "Star":
         return <Star className="w-6 h-6" />;
@@ -74,35 +79,39 @@ export default function PricingPage() {
       default:
         return null;
     }
-  };
+  }, []);
 
   return (
-    <main className="pt-24">
-      <section className="py-16 bg-secondary">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <BlurFade inView>
-            <header className="max-w-3xl mx-auto text-center">
-              <Avatar className="w-16 h-16 bg-primary/10 mx-auto mb-4">
-                <AvatarFallback className="bg-primary/10">
-                  <Sparkles className="w-8 h-8 text-primary" />
-                </AvatarFallback>
-              </Avatar>
-              <h1 className="text-4xl sm:text-5xl font-heading font-bold text-foreground mb-4">
-                Subscription Plans
-              </h1>
-              <p className="text-muted-foreground text-lg">
-                Choose the plan that works for you. Save more with yearly billing.
-              </p>
-            </header>
-          </BlurFade>
-        </div>
-      </section>
+    <div>
+      {showHeader && (
+        <>
+          <section className="py-16 bg-secondary">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+              <BlurFade inView>
+                <header className="max-w-3xl mx-auto text-center">
+                  <Avatar className="w-16 h-16 bg-primary/10 mx-auto mb-4">
+                    <AvatarFallback className="bg-primary/10">
+                      <Sparkles className="w-8 h-8 text-primary" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <h1 className="text-4xl sm:text-5xl font-heading font-bold text-foreground mb-4">
+                    Subscription Plans
+                  </h1>
+                  <p className="text-muted-foreground text-lg">
+                    Choose the plan that works for you. Save more with yearly billing.
+                  </p>
+                </header>
+              </BlurFade>
+            </div>
+          </section>
+        </>
+      )}
 
-      <section className="py-16">
+      <section className="py-16" id="pricing-plans">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <Tabs
             value={billingCycle}
-            onValueChange={(v) => setBillingCycle(v as BillingCycle)}
+            onValueChange={handleBillingCycleChange}
             className="max-w-md mx-auto mb-12"
           >
             <TabsList className="grid w-full grid-cols-2">
@@ -116,7 +125,8 @@ export default function PricingPage() {
             </TabsList>
           </Tabs>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+          <SectionWrapper loading={false} error={null} loadingType="pricing" loadingCount={4}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {SUBSCRIPTION_PLANS.map((plan, index) => {
               const isCurrentPlan = currentPlan?.id === plan.id;
               const price =
@@ -132,15 +142,15 @@ export default function PricingPage() {
               return (
                 <BlurFade key={plan.id} inView delay={index * 0.1}>
                   <Card
-                    className={`relative flex flex-col h-full transition-all duration-300 ${
+                    className={`relative flex flex-col h-full transition-all duration-300 pt-12 pb-8 mt-8 overflow-visible ${
                       isCurrentPlan
                         ? "border-primary ring-2 ring-primary/20"
                         : tierBgColors[plan.id]
                     }`}
                   >
                     {plan.id === "vip" && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <Badge className="bg-gradient-to-r from-amber-500 to-purple-500 text-white">
+                      <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-50 animate-bounce">
+                        <Badge className="bg-gradient-to-r from-amber-500 to-purple-500 text-white whitespace-nowrap">
                           Most Popular
                         </Badge>
                       </div>
@@ -198,19 +208,16 @@ export default function PricingPage() {
                         className="w-full"
                         variant={isCurrentPlan ? "default" : "outline"}
                         onClick={() => handleSelectPlan(plan.id)}
-                        asChild={isCurrentPlan}
                       >
                         {isCurrentPlan ? (
                           <span className="flex items-center gap-2">
                             Current Plan
                             <ArrowRight className="w-4 h-4" />
                           </span>
+                        ) : plan.monthlyPrice === 0 ? (
+                          "Select Plan"
                         ) : (
-                          <Link to="/checkout">
-                            {plan.monthlyPrice === 0
-                              ? "Get Started"
-                              : "Subscribe"}
-                          </Link>
+                          "Subscribe"
                         )}
                       </Button>
                     </CardFooter>
@@ -218,7 +225,8 @@ export default function PricingPage() {
                 </BlurFade>
               );
             })}
-          </div>
+            </div>
+          </SectionWrapper>
         </div>
       </section>
 
@@ -266,17 +274,15 @@ export default function PricingPage() {
               <p className="text-muted-foreground mb-8">
                 Join thousands of members who enjoy exclusive discounts and benefits.
               </p>
-              <Button size="lg" asChild>
-                <Link to="/checkout">
-                  Get Started
-                  <ArrowRight className="ml-2 w-4 h-4" />
-                </Link>
+              <Button size="lg" onClick={() => document.getElementById("pricing-plans")?.scrollIntoView({ behavior: "smooth" })}>
+                View Plans
+                <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </div>
           </BlurFade>
         </div>
       </section>
-    </main>
+    </div>
   );
 }
 

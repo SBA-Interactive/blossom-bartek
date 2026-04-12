@@ -7,8 +7,16 @@ import { BlurFade } from "@/components/ui/blur-fade";
 import { NumberTicker } from "@/components/ui/number-ticker";
 import { DotPattern } from "@/components/ui/dot-pattern";
 import { AnimatedList } from "@/components/ui/animated-list";
-import { Leaf, Recycle, Heart } from "lucide-react";
+import { Leaf, Recycle, Heart, Quote } from "lucide-react";
 import { BentoGrid } from "@/components/ui/bento-grid";
+import PricingPage from "./Pricing";
+import { SectionWrapper } from "@/components/section-wrapper";
+import {
+  BLUR_FADE_DELAY_SHORT,
+  BLUR_FADE_DELAY_MEDIUM,
+  ANIMATED_LIST_DELAY,
+  ANIMATED_LIST_STAGGER,
+} from "@/constants/animation";
 
 const values = [
   {
@@ -58,21 +66,22 @@ const milestones = [
   },
 ];
 
-export default function AboutPage() {
+export default function AboutPage({ showHero = true }: { showHero?: boolean }) {
   return (
-    <main className="pt-24">
-      <section className="py-24 bg-linear-to-br from-primary/5 via-background to-secondary/20 relative overflow-hidden">
-        <DotPattern className="opacity-10 text-primary/20" />
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <BlurFade inView>
-            <div className="max-w-3xl mx-auto text-center">
-              <Badge variant="secondary" className="inline-flex items-center gap-2 px-4 py-2 mb-6">
-                <Leaf className="w-4 h-4" />
-                Our Story
-              </Badge>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-bold text-foreground mb-6 leading-tight">
-                From Fruit Peels to <span className="text-primary">Fresh Scents</span>
-              </h1>
+    <main className={showHero ? "pt-24" : ""}>
+      {showHero && (
+        <section className="py-24 bg-linear-to-br from-primary/5 via-background to-secondary/20 relative overflow-hidden">
+          <DotPattern className="opacity-10 text-primary/20" />
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <BlurFade inView>
+              <div className="max-w-3xl mx-auto text-center">
+                <Badge variant="secondary" className="inline-flex items-center gap-2 px-4 py-2 mb-6">
+                  <Leaf className="w-4 h-4" />
+                  Our Story
+                </Badge>
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-bold text-foreground mb-6 leading-tight">
+                  From Fruit Peels to <span className="text-primary">Fresh Scents</span>
+                </h1>
               <p className="text-xl text-muted-foreground leading-relaxed">
                 Blossom was born from a simple idea: transform nature&apos;s overlooked treasures
                 into something beautiful. We create premium fragrances from upcycled fruit peels,
@@ -82,10 +91,11 @@ export default function AboutPage() {
           </BlurFade>
         </div>
       </section>
+      )}
 
       <section className="py-16 bg-primary text-primary-foreground">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <AnimatedList delay={0.15}>
+          <AnimatedList delay={ANIMATED_LIST_DELAY}>
             <BentoGrid className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {stats.map((stat, index) => (
                 <BlurFade key={index} delay={0.1 * index} inView>
@@ -134,7 +144,7 @@ export default function AboutPage() {
                 </CardContent>
               </Card>
             </BlurFade>
-            <BlurFade delay={0.2} inView>
+            <BlurFade delay={BLUR_FADE_DELAY_MEDIUM} inView>
               <div className="relative">
                 <div className="absolute inset-0 bg-linear-to-br from-primary/20 to-brand-citrus/20 rounded-3xl blur-2xl" />
                 <img
@@ -161,7 +171,7 @@ export default function AboutPage() {
             </header>
           </BlurFade>
 
-          <AnimatedList delay={0.15}>
+          <AnimatedList delay={ANIMATED_LIST_DELAY}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {values.map((value, index) => (
                 <BlurFade key={index} delay={0.1 * index} inView>
@@ -227,6 +237,54 @@ export default function AboutPage() {
           </Tabs>
         </div>
       </section>
+
+      <section className="py-16 bg-secondary/30">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <BlurFade inView>
+            <h2 className="text-2xl font-heading font-bold text-center mb-10">
+              What Our Customers Say
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {[
+                {
+                  name: "Maria K.",
+                  text: "The scents are absolutely divine! I've been using Citrus Bloom for months and still look forward to putting it on every morning. Finally found a fragrance that matches my values.",
+                  rating: 5,
+                },
+                {
+                  name: "Alexandros P.",
+                  text: "Blossom has completely changed how I think about perfume. Knowing it's made from upcycled fruit peels makes it even more special. The quality is incredible.",
+                  rating: 5,
+                },
+                {
+                  name: "Sofia M.",
+                  text: "I gifted the Rose Petal set to my mother and she absolutely loved it. The packaging is beautiful and the scents are so unique. Will definitely be ordering more!",
+                  rating: 5,
+                },
+              ].map((testimonial, index) => (
+                <BlurFade key={index} delay={index * 0.1} inView>
+                  <Card className="h-full">
+                    <CardContent className="p-6">
+                      <Quote className="w-8 h-8 text-primary/30 mb-4" />
+                      <p className="text-muted-foreground mb-4 italic">"{testimonial.text}"</p>
+                      <div className="flex items-center gap-1 mb-2">
+                        {[...Array(testimonial.rating)].map((_, i) => (
+                          <svg key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" viewBox="0 0 24 24">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                          </svg>
+                        ))}
+                      </div>
+                      <p className="font-semibold">{testimonial.name}</p>
+                    </CardContent>
+                  </Card>
+                </BlurFade>
+              ))}
+            </div>
+          </BlurFade>
+        </div>
+      </section>
+
+      <PricingPage showHeader={false} />
     </main>
   );
 }

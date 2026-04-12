@@ -1,8 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/outfit";
-@import "@fontsource-variable/oxanium";
+@import "@fontsource-variable/outfit/wght.css";
+@import "@fontsource-variable/oxanium/wght.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -172,10 +172,10 @@ body {
   @keyframes pulse {
     0%,
     100% {
-      boxshadow: 0 0 0 0 var(--pulse-color);
+      box-shadow: 0 0 0 0 var(--pulse-color);
     }
     50% {
-      boxshadow: 0 0 0 8px var(--pulse-color);
+      box-shadow: 0 0 0 8px var(--pulse-color);
     }
   }
   @keyframes background-position-spin {

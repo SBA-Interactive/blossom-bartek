@@ -2,6 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { BlurFade } from "@/components/ui/blur-fade";
 import { Separator } from "@/components/ui/separator";
 import { Leaf, Recycle, Sparkles, Heart } from "lucide-react";
+import {
+  BLUR_FADE_DELAY_SHORT,
+  BLUR_FADE_DELAY_MEDIUM,
+  ANIMATED_LIST_STAGGER,
+} from "@/constants/animation";
 
 const features = [
   {
@@ -43,7 +48,7 @@ export function Features() {
               Why Choose Blossom?
             </h2>
           </BlurFade>
-          <BlurFade delay={0.1} inView>
+          <BlurFade delay={BLUR_FADE_DELAY_SHORT} inView>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
               We transform simple fruit peels into extraordinary fragrances, combining
               sustainability with premium quality.
@@ -53,7 +58,7 @@ export function Features() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
           {features.map((feature, index) => (
-            <BlurFade key={index} delay={0.1 * index} inView>
+            <BlurFade key={index} delay={ANIMATED_LIST_STAGGER * index} inView>
               <Card className="h-full border border-border shadow-sm hover:shadow-md transition-shadow">
                 <CardHeader className="pb-2 sm:pb-4">
                   <span

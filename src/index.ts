@@ -1,5 +1,6 @@
 import { serve } from "bun";
 import index from "./index.html";
+import { CACHE_MAX_AGE, UA_SLICE_LENGTH } from "@/constants/http";
 
 const server = serve({
   routes: {
@@ -12,7 +13,7 @@ const server = serve({
       return new Response(file, {
         headers: {
           "Content-Type": file.type,
-          "Cache-Control": "public, max-age=31536000",
+          "Cache-Control": `public, max-age=${CACHE_MAX_AGE}`,
         },
       });
     },
@@ -28,10 +29,10 @@ const server = serve({
       try {
         const data = await req.json();
         console.log(
-          `[${now}] ${data?.path ?? "/"} | IP: ${ip} | Lang: ${data?.lang ?? "-"} | Screen: ${data?.screen ?? "-"} | UA: ${ua.slice(0, 100)}`,
+          `[${now}] ${data?.path ?? "/"} | IP: ${ip} | Lang: ${data?.lang ?? "-"} | Screen: ${data?.screen ?? "-"} | UA: ${ua.slice(0, UA_SLICE_LENGTH)}`,
         );
       } catch {
-        console.log(`[${now}] / | IP: ${ip} | UA: ${ua.slice(0, 100)}`);
+        console.log(`[${now}] / | IP: ${ip} | UA: ${ua.slice(0, UA_SLICE_LENGTH)}`);
       }
 
       return new Response("ok", { status: 200 });

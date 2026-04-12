@@ -1,4 +1,6 @@
 import React from "react";
+import { useMemo, useCallback } from "react";
+import { SectionWrapper } from "@/components/section-wrapper";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +20,7 @@ import { BlurFade } from "@/components/ui/blur-fade";
 import { Link } from "@tanstack/react-router";
 import { useCompareStore } from "@/store/useCompareStore";
 import { useCartStore } from "@/store/useCartStore";
+import { getProductById } from "@/constants/products";
 import {
   GitCompare,
   ShoppingBag,
@@ -43,9 +46,19 @@ export default function ComparePage() {
   const clearCompare = useCompareStore((state) => state.clearCompare);
   const addItem = useCartStore((state) => state.addItem);
 
-  const handleAddToCart = (productId: string) => {
+  const handleAddToCart = useCallback((productId: string) => {
     addItem(productId, 1);
-  };
+  }, [addItem]);
+
+  const handleRemoveItem = useCallback((productId: string) => {
+    removeItem(productId);
+  }, [removeItem]);
+
+  const handleClearCompare = useCallback(() => {
+    clearCompare();
+  }, [clearCompare]);
+
+  const productData = useMemo(() => items.map(item => getProductById(item.productId)).filter(Boolean), [items]);
 
   if (items.length === 0) {
     return (
@@ -53,39 +66,41 @@ export default function ComparePage() {
         <SkipLink />
         <main className="pt-24 min-h-screen" id="compare-main-content">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
-            <BlurFade inView>
-              <header className="flex items-center gap-3 mb-8">
-                <Avatar className="w-12 h-12 bg-primary/10">
-                  <AvatarFallback className="bg-primary/10">
-                    <GitCompare className="w-6 h-6 text-primary" aria-hidden="true" />
-                  </AvatarFallback>
-                </Avatar>
-                <h1 className="text-3xl sm:text-4xl font-heading font-bold text-foreground">
-                  Compare Products
-                </h1>
-              </header>
+            <SectionWrapper loading={false} error={null}>
+              <BlurFade inView>
+                <header className="flex items-center gap-3 mb-8">
+                  <Avatar className="w-12 h-12 bg-primary/10">
+                    <AvatarFallback className="bg-primary/10">
+                      <GitCompare className="w-6 h-6 text-primary" aria-hidden="true" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <h1 className="text-3xl sm:text-4xl font-heading font-bold text-foreground">
+                    Compare Products
+                  </h1>
+                </header>
 
-              <Empty>
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <GitCompare className="w-10 h-10" />
-                  </EmptyMedia>
-                  <EmptyTitle>No products to compare</EmptyTitle>
-                  <EmptyDescription>
-                    Add products to compare their features and prices.
-                  </EmptyDescription>
-                </EmptyHeader>
-                <EmptyContent>
-                  <Button asChild size="lg">
-                    <Link to="/products">
-                      <Package className="mr-2 w-4 h-4" />
-                      Browse Products
-                      <ArrowRight className="ml-2 w-4 h-4" />
-                    </Link>
-                  </Button>
-                </EmptyContent>
-              </Empty>
-            </BlurFade>
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <GitCompare className="w-10 h-10" />
+                    </EmptyMedia>
+                    <EmptyTitle>No products to compare</EmptyTitle>
+                    <EmptyDescription>
+                      Add products to compare their features and prices.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                  <EmptyContent>
+                    <Button asChild size="lg">
+                      <Link to="/products">
+                        <Package className="mr-2 w-4 h-4" />
+                        Browse Products
+                        <ArrowRight className="ml-2 w-4 h-4" />
+                      </Link>
+                    </Button>
+                  </EmptyContent>
+                </Empty>
+              </BlurFade>
+            </SectionWrapper>
           </div>
         </main>
       </>
@@ -106,25 +121,26 @@ export default function ComparePage() {
       <SkipLink />
       <main className="pt-24 min-h-screen" id="compare-main-content">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
-          <BlurFade inView>
-            <header className="flex items-center gap-3 mb-8">
-              <Avatar className="w-12 h-12 bg-primary/10">
-                <AvatarFallback className="bg-primary/10">
-                  <GitCompare className="w-6 h-6 text-primary" aria-hidden="true" />
-                </AvatarFallback>
-              </Avatar>
-              <h1 className="text-3xl sm:text-4xl font-heading font-bold text-foreground">
-                Compare Products
-              </h1>
-              <Badge variant="secondary" className="ml-2">
-                {items.length} products
-              </Badge>
-              <Button variant="ghost" size="sm" onClick={clearCompare} className="ml-auto">
-                Clear All
-              </Button>
-            </header>
+          <SectionWrapper loading={false} error={null}>
+            <BlurFade inView>
+              <header className="flex items-center gap-3 mb-8">
+                <Avatar className="w-12 h-12 bg-primary/10">
+                  <AvatarFallback className="bg-primary/10">
+                    <GitCompare className="w-6 h-6 text-primary" aria-hidden="true" />
+                  </AvatarFallback>
+                </Avatar>
+                <h1 className="text-3xl sm:text-4xl font-heading font-bold text-foreground">
+                  Compare Products
+                </h1>
+                <Badge variant="secondary" className="ml-2">
+                  {items.length} products
+                </Badge>
+                <Button variant="ghost" size="sm" onClick={handleClearCompare} className="ml-auto">
+                  Clear All
+                </Button>
+              </header>
 
-            <div className="overflow-x-auto">
+              <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
                   <tr>
@@ -136,7 +152,7 @@ export default function ComparePage() {
                             variant="ghost"
                             size="icon"
                             className="absolute -top-2 -right-2 h-6 w-6"
-                            onClick={() => removeItem(item.productId)}
+                            onClick={() => handleRemoveItem(item.productId)}
                           >
                             <X className="w-4 h-4" />
                           </Button>
@@ -209,6 +225,7 @@ export default function ComparePage() {
               </table>
             </div>
           </BlurFade>
+          </SectionWrapper>
         </div>
       </main>
     </>

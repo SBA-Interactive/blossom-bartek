@@ -13,8 +13,10 @@ import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as CustomRouteImport } from './routes/custom'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as ConfiguratorRouteImport } from './routes/configurator'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
@@ -43,6 +45,11 @@ const PricingRoute = PricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CustomRoute = CustomRouteImport.update({
+  id: '/custom',
+  path: '/custom',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CookiesRoute = CookiesRouteImport.update({
   id: '/cookies',
   path: '/cookies',
@@ -51,6 +58,11 @@ const CookiesRoute = CookiesRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguratorRoute = ConfiguratorRouteImport.update({
+  id: '/configurator',
+  path: '/configurator',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -95,8 +107,10 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/compare': typeof CompareRoute
+  '/configurator': typeof ConfiguratorRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
+  '/custom': typeof CustomRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
@@ -110,8 +124,10 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/compare': typeof CompareRoute
+  '/configurator': typeof ConfiguratorRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
+  '/custom': typeof CustomRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
@@ -126,8 +142,10 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/compare': typeof CompareRoute
+  '/configurator': typeof ConfiguratorRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
+  '/custom': typeof CustomRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
@@ -143,8 +161,10 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/compare'
+    | '/configurator'
     | '/contact'
     | '/cookies'
+    | '/custom'
     | '/pricing'
     | '/privacy'
     | '/terms'
@@ -158,8 +178,10 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/compare'
+    | '/configurator'
     | '/contact'
     | '/cookies'
+    | '/custom'
     | '/pricing'
     | '/privacy'
     | '/terms'
@@ -173,8 +195,10 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/compare'
+    | '/configurator'
     | '/contact'
     | '/cookies'
+    | '/custom'
     | '/pricing'
     | '/privacy'
     | '/terms'
@@ -189,8 +213,10 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   CompareRoute: typeof CompareRoute
+  ConfiguratorRoute: typeof ConfiguratorRoute
   ContactRoute: typeof ContactRoute
   CookiesRoute: typeof CookiesRoute
+  CustomRoute: typeof CustomRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   TermsRoute: typeof TermsRoute
@@ -229,6 +255,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/custom': {
+      id: '/custom'
+      path: '/custom'
+      fullPath: '/custom'
+      preLoaderRoute: typeof CustomRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cookies': {
       id: '/cookies'
       path: '/cookies'
@@ -241,6 +274,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configurator': {
+      id: '/configurator'
+      path: '/configurator'
+      fullPath: '/configurator'
+      preLoaderRoute: typeof ConfiguratorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -301,8 +341,10 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   CompareRoute: CompareRoute,
+  ConfiguratorRoute: ConfiguratorRoute,
   ContactRoute: ContactRoute,
   CookiesRoute: CookiesRoute,
+  CustomRoute: CustomRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   TermsRoute: TermsRoute,

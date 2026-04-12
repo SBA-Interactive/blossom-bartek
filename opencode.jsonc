@@ -1,0 +1,86 @@
+{
+    "$schema": "https://opencode.ai/config.json",
+    "model": "opencode/minimax-m2.5-free",
+
+    "permission": {
+        "bash": {
+            "git *": "deny",
+            "git log *": "allow",
+            
+            "npm *": "deny",
+            
+            "bun": "deny",
+            "bun run *": "deny",
+            "bun run lint": "allow",
+            "bun run format": "allow",
+            "bun install *": "allow",
+            "bun add *": "allow",
+            "bunx --bun shadcn@latest *": "allow",
+            
+            "pnpm *": "deny",
+            "yarn *": "deny",
+
+            "grep *": "allow",
+            "sed *": "ask",
+            "find *": "ask",
+            "ls *": "ask",
+            "cat *": "ask",
+            "rm *": "deny",
+            "rmdir *": "deny",
+            "mkdir *": "ask",
+            "touch *": "ask",
+            "cp *": "ask",
+            "mv *": "deny",
+        
+            "tail *": "ask",
+            "head *": "ask",
+            "less *": "ask",
+            "more *": "ask"
+        },
+        
+        "edit": {
+            "node_modules": "deny",
+            "package-lock.json": "deny",
+            "pnpm-lock.yaml": "deny",
+            "bun.lockb": "deny",
+            ".git": "deny",
+            "skills-lock.json": "deny"
+        }
+    },
+
+    "mcp": {
+        "magicui": {
+            "type": "local",
+            "command": [
+                "bunx",
+                "-y",
+                "@magicuidesign/mcp@latest"
+            ],
+            "enabled": true,
+            "environment": {}
+        },
+
+        "shadcn": {
+            "type": "local",
+            "command": [
+                "bunx",
+                "-y",
+                "shadcn@latest",
+                "mcp"
+            ],
+            "enabled": true,
+            "environment": {}
+        },
+
+        "context7": {
+            "type": "local",
+            "command": [
+                "npx",
+                "-y",
+                "@upstash/context7-mcp"
+            ],
+            "enabled": true,
+            "environment": {}
+        }
+    }
+}

@@ -1,4 +1,6 @@
 import React from "react";
+import { useMemo, useCallback } from "react";
+import { SectionWrapper } from "@/components/section-wrapper";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -18,9 +20,11 @@ import { ButtonGroup } from "@/components/ui/button-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BlurFade } from "@/components/ui/blur-fade";
+import { BLUR_FADE_DELAY_LONG } from "@/constants/animation";
 import { Link } from "@tanstack/react-router";
 import { useCartStore } from "@/store/useCartStore";
 import { useSubscriptionStore, SUBSCRIPTION_PLANS } from "@/store/useSubscriptionStore";
+import { FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_COST } from "@/constants/shipping";
 import {
   Minus,
   Plus,
@@ -33,6 +37,7 @@ import {
   Sparkles,
   Truck,
 } from "lucide-react";
+import { MAX_QUANTITY } from "@/constants/product";
 
 function SkipLink() {
   return (
@@ -51,19 +56,27 @@ export default function CartPage() {
   const removeItem = useCartStore((state) => state.removeItem);
   const { currentTier, getDiscount, hasFreeShipping, applyDiscount } = useSubscriptionStore();
 
-  const currentPlan = SUBSCRIPTION_PLANS.find((p) => p.id === currentTier);
-  const hasDiscount = currentTier !== "free";
-  const subscriberFreeShipping = hasFreeShipping();
+  const currentPlan = useMemo(() => SUBSCRIPTION_PLANS.find((p) => p.id === currentTier), [currentTier]);
+  const hasDiscount = useMemo(() => currentTier !== "free", [currentTier]);
+  const subscriberFreeShipping = useMemo(() => hasFreeShipping(), [hasFreeShipping]);
 
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const discountedSubtotal = hasDiscount ? applyDiscount(subtotal) : subtotal;
-  const discountAmount = subtotal - discountedSubtotal;
-  const shipping = subscriberFreeShipping || discountedSubtotal >= 50 ? 0 : 4.99;
-  const total = discountedSubtotal + shipping;
-  const freeShippingThreshold = subscriberFreeShipping ? 0 : 50;
-  const freeShippingProgress = subscriberFreeShipping
+  const subtotal = useMemo(() => items.reduce((sum, item) => sum + item.price * item.quantity, 0), [items]);
+  const discountedSubtotal = useMemo(() => hasDiscount ? applyDiscount(subtotal) : subtotal, [hasDiscount, applyDiscount, subtotal]);
+  const discountAmount = useMemo(() => subtotal - discountedSubtotal, [subtotal, discountedSubtotal]);
+  const shipping = useMemo(() => subscriberFreeShipping || discountedSubtotal >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_COST, [subscriberFreeShipping, discountedSubtotal]);
+  const total = useMemo(() => discountedSubtotal + shipping, [discountedSubtotal, shipping]);
+  const freeShippingThreshold = useMemo(() => subscriberFreeShipping ? 0 : FREE_SHIPPING_THRESHOLD, [subscriberFreeShipping]);
+  const freeShippingProgress = useMemo(() => subscriberFreeShipping
     ? 100
-    : Math.min((discountedSubtotal / freeShippingThreshold) * 100, 100);
+    : Math.min((discountedSubtotal / freeShippingThreshold) * 100, 100), [subscriberFreeShipping, discountedSubtotal, freeShippingThreshold]);
+
+  const handleUpdateQuantity = useCallback((productId: string, quantity: number) => {
+    updateQuantity(productId, quantity);
+  }, [updateQuantity]);
+
+  const handleRemoveItem = useCallback((productId: string) => {
+    removeItem(productId);
+  }, [removeItem]);
 
   return (
     <>
@@ -133,7 +146,7 @@ export default function CartPage() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => removeItem(item.productId)}
+                                  onClick={() => handleRemoveItem(item.productId)}
                                   className="text-muted-foreground hover:text-destructive shrink-0 -mt-1 -mr-1"
                                   aria-label={`Remove ${item.name} from cart`}
                                 >
@@ -157,7 +170,7 @@ export default function CartPage() {
                               <Button
                                 variant="outline"
                                 size="icon"
-                                onClick={() => updateQuantity(item.productId, Math.max(1, item.quantity - 1))}
+                                onClick={() => handleUpdateQuantity(item.productId, Math.max(1, item.quantity - 1))}
                                 disabled={item.quantity <= 1}
                                 aria-label={`Decrease quantity of ${item.name}`}
                                 className="w-10 h-10"
@@ -165,13 +178,17 @@ export default function CartPage() {
                                 <Minus className="w-3.5 h-3.5" aria-hidden="true" />
                               </Button>
                               <input
-                                type="number"
-                                min={1}
-                                max={10}
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[1-9][0-9]*"
                                 value={item.quantity}
                                 onChange={(e) => {
-                                  const val = parseInt(e.target.value) || 1;
-                                  updateQuantity(item.productId, Math.min(Math.max(1, val), 10));
+                                  const val = parseInt(e.target.value);
+                                  if (!isNaN(val) && val >= 1) {
+                                    handleUpdateQuantity(item.productId, Math.min(val, MAX_QUANTITY));
+                                  } else if (e.target.value === "") {
+                                    handleUpdateQuantity(item.productId, 1);
+                                  }
                                 }}
                                 className="w-16 h-10 flex items-center justify-center text-lg font-medium text-center border-y border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                                 aria-label={`Quantity for ${item.name}`}
@@ -179,8 +196,8 @@ export default function CartPage() {
                               <Button
                                 variant="outline"
                                 size="icon"
-                                onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                                disabled={item.quantity >= 10}
+                                onClick={() => handleUpdateQuantity(item.productId, item.quantity + 1)}
+                                disabled={item.quantity >= MAX_QUANTITY}
                                 aria-label={`Increase quantity of ${item.name}`}
                                 className="w-10 h-10"
                               >
@@ -207,7 +224,7 @@ export default function CartPage() {
                   </Button>
                 </div>
 
-                <BlurFade delay={0.3} inView>
+                <BlurFade delay={BLUR_FADE_DELAY_LONG} inView>
                   <Card className="sticky top-28 h-fit">
                     <CardHeader>
                       <CardTitle className="text-xl font-heading font-semibold">

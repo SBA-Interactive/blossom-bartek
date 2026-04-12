@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { getProductById } from "@/constants/products";
+import { MAX_QUANTITY_CART } from "@/constants/filters";
 
 export interface CartItem {
   id: string;
@@ -9,6 +10,33 @@ export interface CartItem {
   quantity: number;
   image: string;
   size: string;
+  customBlend?: {
+    topNotes: { id: string; name: string }[];
+    heartNotes: { id: string; name: string }[];
+    baseNotes: { id: string; name: string }[];
+  };
+}
+
+interface CartState {
+  items: CartItem[];
+  isOpen: boolean;
+  addItem: (productId: string, quantity?: number) => void;
+  addCustomItem: (name: string, price: number, size: string, customBlend: CartItem["customBlend"]) => void;
+  removeItem: (productId: string) => void;
+  updateQuantity: (productId: string, quantity: number) => void;
+  clearCart: () => void;
+  getTotalItems: () => number;
+  getTotalPrice: () => number;
+  toggleCart: (isOpen?: boolean) => void;
+}
+
+interface CartItemInput {
+  productId: string;
+  quantity?: number;
+  name?: string;
+  price?: number;
+  size?: string;
+  customBlend?: CartItem["customBlend"];
 }
 
 interface CartState {
@@ -38,7 +66,7 @@ export const useCartStore = create<CartState>((set, get) => ({
         return {
           items: state.items.map((item) =>
             item.productId === productId
-              ? { ...item, quantity: Math.min(item.quantity + quantity, 10) }
+              ? { ...item, quantity: Math.min(item.quantity + quantity, MAX_QUANTITY_CART) }
               : item,
           ),
         };
@@ -62,6 +90,27 @@ export const useCartStore = create<CartState>((set, get) => ({
     });
   },
 
+  addCustomItem: (name: string, price: number, size: string, customBlend: CartItem["customBlend"]) => {
+    const productId = `custom-${Date.now()}`;
+    
+    set((state) => ({
+      items: [
+        ...state.items,
+        {
+          id: crypto.randomUUID(),
+          productId,
+          name,
+          price,
+          quantity: 1,
+          image: "/perfume.png",
+          size,
+          customBlend,
+        },
+      ],
+      isOpen: true,
+    }));
+  },
+
   removeItem: (productId: string) => {
     set((state) => ({
       items: state.items.filter((item) => item.productId !== productId),
@@ -69,7 +118,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
 
   updateQuantity: (productId: string, quantity: number) => {
-    if (quantity < 1 || quantity > 10) return;
+    if (quantity < 1 || quantity > MAX_QUANTITY_CART) return;
 
     set((state) => ({
       items: state.items.map((item) =>

@@ -10,8 +10,10 @@ export default defineConfig({
     host: true,
     strictPort: true,
     port: 5173,
-    allowedHosts: ["*"]
+    allowedHosts: true
   },
+
+  appType: 'mpa',
 
   plugins: [
     tailwindcss(),
@@ -21,10 +23,43 @@ export default defineConfig({
       },
       prerender: {
         enabled: true,
-        crawlLinks: true,
+        routes: async () => {
+          const products = [
+            'citrus-bloom', 'berry-mist', 'garden-peel', 'tropical-sun', 'forest-dew', 'rose-petal'
+          ];
+          const sizes = ['30ml', '60ml', '100ml'];
+          const productRoutes = products.flatMap(product => 
+            sizes.map(size => `/product/${product}-${size}`)
+          );
+          return [
+            '/',
+            '/products',
+            ...productRoutes,
+            '/about',
+            '/contact',
+            '/cart',
+            '/wishlist',
+            '/compare',
+            '/checkout',
+            '/pricing',
+            '/terms',
+            '/privacy',
+            '/cookies',
+            '/configurator',
+            '/custom',
+          ];
+        },
       },
     }),
-    react(),
+    react({
+      babel: {
+        plugins: [
+          ['babel-plugin-react-compiler', {
+            target: '19'
+          }]
+        ]
+      }
+    }),
     tsconfigPaths(),
   ],
   resolve: {
