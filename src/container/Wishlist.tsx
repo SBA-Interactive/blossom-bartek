@@ -88,7 +88,7 @@ function WishlistItemCard({ item }: { item: ReturnType<typeof useWishlistStore.g
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={handleRemove}>
+                onClick={handleRemove}
               >
                 <Trash2 className="w-4 h-4 text-destructive" />
               </Button>

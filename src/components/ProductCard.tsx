@@ -13,6 +13,7 @@ import { Button } from "./ui/button";
 import { ButtonGroup } from "./ui/button-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { BorderBeam } from "./ui/border-beam";
+import { Lens } from "./ui/lens";
 export interface Action {
   name: string;
   icon?: string;
@@ -57,7 +58,7 @@ export function StandardProductCard({
   actions?: Map<string, Action>;
 }) {
   return (
-    <Card className={cn("relative mx-auto w-full max-w-sm pt-0 group overflow-hidden")}>
+    <Card className={cn("relative mx-auto w-full max-w-sm pt-0 group")}>
       <BorderBeam
         size={200}
         duration={6}
@@ -67,14 +68,16 @@ export function StandardProductCard({
       />
       <div
         className={cn(
-          "absolute inset-0 z-30 aspect-video bg-black/10 group-hover:bg-black/5 transition-background-color duration-200",
+          "absolute inset-0 pointer-events-none z-30 aspect-video bg-black/10 group-hover:bg-black/5 transition-background-color duration-200",
         )}
       />
-      <img
-        src="/perfume.png"
-        alt="Logo"
-        className={cn("relative z-20 aspect-video w-full object-cover")}
-      />
+      <Lens zoomFactor={1.5} lensSize={150}>
+        <img
+          src="/perfume.webp"
+          alt="Logo"
+          className={cn("relative z-20 aspect-video w-full object-cover")}
+        />
+      </Lens>
       <CardHeader>
         <CardAction>
           {Array.isArray(product?.badge) ? (
@@ -94,7 +97,7 @@ export function StandardProductCard({
         <ButtonGroup className="w-full">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" className="w-1/2" onClick={actions?.get("view")?.click}>
+              <Button variant="outline" className="w-1/2 pointer-events-auto" onClick={actions?.get("view")?.click}>
                 View
               </Button>
             </TooltipTrigger>
@@ -102,7 +105,7 @@ export function StandardProductCard({
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="default" className="w-1/2" onClick={actions?.get("buy")?.click}>
+              <Button variant="default" className="w-1/2 pointer-events-auto" onClick={actions?.get("buy")?.click}>
                 Buy
               </Button>
             </TooltipTrigger>

@@ -18,12 +18,12 @@ export interface PackagingOption {
 }
 
 export const BOTTLE_OPTIONS: BottleOption[] = [
-  { id: 'citrus-bloom', name: 'Citrus Bloom', image: '/perfume_citrus_bloom_medium.png' },
-  { id: 'berry-mist', name: 'Berry Mist', image: '/perfume_berry_mist_big.png' },
-  { id: 'garden-peel', name: 'Garden Peel', image: '/perfume_garden_peel.png' },
-  { id: 'tropical-sun', name: 'Tropical Sun', image: '/perfume_tropical_sun_medium.png' },
-  { id: 'forest-dew', name: 'Forest Dew', image: '/perfume_forest_dew_big.png' },
-  { id: 'rose-petal', name: 'Rose Petal', image: '/perfume_rose_petal_small.png' },
+  { id: 'citrus-bloom', name: 'Citrus Bloom', image: '/perfume_citrus_bloom_medium.webp' },
+  { id: 'berry-mist', name: 'Berry Mist', image: '/perfume_berry_mist_big.webp' },
+  { id: 'garden-peel', name: 'Garden Peel', image: '/perfume_garden_peel.webp' },
+  { id: 'tropical-sun', name: 'Tropical Sun', image: '/perfume_tropical_sun_medium.webp' },
+  { id: 'forest-dew', name: 'Forest Dew', image: '/perfume_forest_dew_big.webp' },
+  { id: 'rose-petal', name: 'Rose Petal', image: '/perfume_rose_petal_small.webp' },
 ];
 
 export const SIZE_OPTIONS: SizeOption[] = [
@@ -44,8 +44,8 @@ export const SCENT_OPTIONS = {
 };
 
 export const PACKAGING_OPTIONS: PackagingOption[] = [
-  { id: 'standard', name: 'Standard Box', image: '/images/packaging_standard.png' },
-  { id: 'gift', name: 'Gift Wrapped', image: '/images/packaging_gift.png' },
-  { id: 'birthday', name: 'Birthday Box', image: '/images/packaging_birthday.png' },
-  { id: 'luxury', name: 'Luxury Velvet Pouch', image: '/images/packaging_luxury.png' },
+  { id: 'standard', name: 'Standard Box', image: '/box_transparent.webp' },
+  { id: 'gift', name: 'Gift Wrapped', image: '/box-gift-transparent.webp' },
+  { id: 'birthday', name: 'Birthday Box', image: '/box-wrapped-transparent.webp' },
+  { id: 'luxury', name: 'Luxury Velvet Pouch', image: '/box-velvet-transparent.webp' },
 ];

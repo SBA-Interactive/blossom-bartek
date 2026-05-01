@@ -20,6 +20,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { BlurFade } from "@/components/ui/blur-fade";
+import { Lens } from "@/components/ui/lens";
 import { Link, useParams, useNavigate } from "@tanstack/react-router";
 import { getProductById, getSimilarProducts, getRelatedSizes, getAllBaseProducts } from "@/constants/products";
 import { MAX_QUANTITY, BOTTLE_SIZES } from "@/constants/product";
@@ -416,12 +417,14 @@ export default function ProductDetailPage() {
                   <CarouselContent>
                     <CarouselItem>
                       <div className="relative aspect-square rounded-2xl overflow-hidden bg-secondary/30">
-                        <img
-                          src={currentProduct?.image}
-                          alt={`${currentProduct?.name} - Front view`}
-                          className="w-full h-full object-cover"
-                        />
-                        <Badge className="absolute top-4 left-4" variant="default">
+                        <Lens zoomFactor={1.5} lensSize={180}>
+                          <img
+                            src={currentProduct?.image}
+                            alt={`${currentProduct?.name} - Front view`}
+                            className="w-full h-full object-cover"
+                          />
+                        </Lens>
+                        <Badge className="absolute top-4 left-4 z-20" variant="default">
                           {currentProduct?.badge}
                         </Badge>
                       </div>
@@ -429,28 +432,32 @@ export default function ProductDetailPage() {
                     {currentBaseProductId === "tropical-sun" && (
                       <CarouselItem>
                         <div className="relative aspect-square rounded-2xl overflow-hidden bg-secondary/30">
-                          <img
-                            src="/product_poster_tropical_sun_small.png"
-                            alt={`${currentProduct?.name} - Poster`}
-                            className="w-full h-full object-contain"
-                          />
+                          <Lens zoomFactor={1.5} lensSize={180}>
+                            <img
+                              src="/product_poster_tropical_sun_small.webp"
+                              alt={`${currentProduct?.name} - Poster`}
+                              className="w-full h-full object-contain"
+                            />
+                          </Lens>
                         </div>
                       </CarouselItem>
                     )}
                     {currentBaseProductId === "rose-petal" && (
                       <CarouselItem>
                         <div className="relative aspect-square rounded-2xl overflow-hidden bg-secondary/30">
-                          <img
-                            src="/product_poster_rose_petal.png"
-                            alt={`${currentProduct?.name} - Poster`}
-                            className="w-full h-full object-contain"
-                          />
+                          <Lens zoomFactor={1.5} lensSize={180}>
+                            <img
+                              src="/product_poster_rose_petal.webp"
+                              alt={`${currentProduct?.name} - Poster`}
+                              className="w-full h-full object-contain"
+                            />
+                          </Lens>
                         </div>
                       </CarouselItem>
                     )}
                   </CarouselContent>
-                  <CarouselPrevious className="left-4" />
-                  <CarouselNext className="right-4" />
+                  <CarouselPrevious className="left-4 z-10 pointer-events-auto" />
+                  <CarouselNext className="right-4 z-10 pointer-events-auto" />
                 </Carousel>
               </section>
             </BlurFade>

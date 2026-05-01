@@ -148,7 +148,7 @@ export default function AboutPage({ showHero = true }: { showHero?: boolean }) {
               <div className="relative">
                 <div className="absolute inset-0 bg-linear-to-br from-primary/20 to-brand-citrus/20 rounded-3xl blur-2xl" />
                 <img
-                  src="/perfume.png"
+                  src="/perfume.webp"
                   alt="Blossom Natural Perfume"
                   className="relative z-10 w-full rounded-2xl shadow-xl"
                 />

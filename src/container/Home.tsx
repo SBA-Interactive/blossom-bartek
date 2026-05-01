@@ -32,8 +32,6 @@ const Home = () => {
       >
         <ProductShowcase />
       </SectionWrapper>
-
-      <AboutPage showHero={false} />
     </main>
   );
 };

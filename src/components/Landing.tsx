@@ -25,7 +25,7 @@ export function Landing() {
               <div className="p-4 md:p-0">
                 <AspectRatio ratio={4 / 3}>
                   <img
-                    src="/perfume.png"
+                    src="/perfume.webp"
                     alt="Perfume"
                     className="w-full h-full object-cover rounded-md"
                   />
@@ -45,7 +45,7 @@ export function Landing() {
               <div className="p-4 md:p-0 order-2 md:order-1">
                 <AspectRatio ratio={4 / 3}>
                   <img
-                    src="/perfume.png"
+                    src="/perfume.webp"
                     alt="Perfume"
                     className="w-full h-full object-cover rounded-md"
                   />

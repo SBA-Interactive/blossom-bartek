@@ -102,7 +102,7 @@ export const useCartStore = create<CartState>((set, get) => ({
           name,
           price,
           quantity: 1,
-          image: "/perfume.png",
+          image: "/perfume.webp",
           size,
           customBlend,
         },

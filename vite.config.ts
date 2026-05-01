@@ -13,8 +13,6 @@ export default defineConfig({
     allowedHosts: true
   },
 
-  appType: 'mpa',
-
   plugins: [
     tailwindcss(),
     tanstackStart({

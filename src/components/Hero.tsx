@@ -28,7 +28,7 @@ export function Hero() {
           playsInline
           autoPlay
           preload="none"
-          poster="/poster.png"
+          poster="/poster.webp"
           className="z-10 absolute inset-0 w-full h-full object-cover grayscale sepia-125"
         >
         <source src="/hero.webm" type="video/mp4" />
@@ -37,9 +37,26 @@ export function Hero() {
         aria-hidden
         className="absolute inset-0 bg-black/30 backdrop-blur-[1px] -z-10"
       />
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-24">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          <div className="space-y-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-2 lg:pt-24">
+        <div className="grid lg:grid-cols-2 gap-0 lg:gap-16 items-center -mt-8 lg:mt-0">
+          <BlurFade delay={BLUR_FADE_DELAY_LONG}>
+            <figure className="relative flex justify-center lg:justify-end mt-0 order-first lg:order-last">
+              <div className="relative w-full max-w-md lg:max-w-lg aspect-[3/4] mt-0">
+                <img
+                  src="/main_page_perfume.webp"
+                  alt="Blossom natural perfume bottle with fruit peel ingredients"
+                  loading="eager"
+                  fetchPriority="high"
+                  className="relative z-10 w-full h-full object-contain rounded-2xl border-0 scale-50"
+                />
+              </div>
+              <figcaption className="sr-only">
+                Blossom eco-friendly perfume made from natural fruit peels
+              </figcaption>
+            </figure>
+          </BlurFade>
+
+          <div className="space-y-2 -mt-18 order-last lg:order-first">
             <BlurFade delay={BLUR_FADE_DELAY_MEDIUM}>
               <h1 className="text-hero-text text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-heading font-bold leading-tight">
                 <span className="text-shadow text-shadow-zinc-950 text-shadow-2xl">Fresh Scents from{" "}</span>
@@ -127,23 +144,6 @@ export function Hero() {
               </div>
             </BlurFade>
           </div>
-
-<BlurFade delay={BLUR_FADE_DELAY_LONG}>
-            <figure className="relative flex justify-center lg:justify-end">
-              <div className="relative w-full max-w-md lg:max-w-lg aspect-[3/4]">
-                <img
-                  src="/perfume.png"
-                  alt="Blossom natural perfume bottle with fruit peel ingredients"
-                  loading="eager"
-                  fetchPriority="high"
-                  className="relative z-10 w-full h-full object-contain rounded-2xl border-0"
-                />
-              </div>
-              <figcaption className="sr-only">
-                Blossom eco-friendly perfume made from natural fruit peels
-              </figcaption>
-            </figure>
-          </BlurFade>
         </div>
       </div>
     </section>
