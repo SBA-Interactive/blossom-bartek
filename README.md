@@ -1,209 +1,268 @@
-# Blossom Bartek - Prezentacja strony
-
-## JAK POKAZAĆ STRONĘ KLIENTOWI
+# Blossom Bartek - Website Presentation
 
 ---
 
-### KROK 1: Wejdź na stronę (/)
-
-**Co widzi klient:**
-- Duży baner wideo w tle z butelką perfum
-- Nagłówek: "Fresh Scents from Nature's Gift"
-- Podtekst: "Discover our collection..."
-- 3 liczby animowane: 10+ Safe Age, 100% Natural, Eco Friendly
-- 2 przyciski: "Shop Now" i "Learn More"
+## HOW TO PRESENT THE WEBSITE TO A CLIENT
 
 ---
 
-### KROK 2: Kliknij "Shop Now"
+### STEP 1: Go to homepage (/)
 
-→ Przenosi do `/products`
-
-**Co widzi klient:**
-- Nagłówek: "Explore Our Fragrances"
-- Pasek wyszukiwania
-- Przycisk filtrowania
-- Sortowanie (Newest, Price, Name)
-- Siatka produktów (6 produktów)
+**What client sees:**
+- Large video background with perfume bottle
+- Headline: "Fresh Scents from Nature's Gift"
+- Subtitle: "Discover our collection..."
+- 3 animated numbers: 10+ Safe Age, 100% Natural, Eco Friendly
+- 2 buttons: "Shop Now" and "Learn More"
 
 ---
 
-### KROK 3: Scrolluj w dół na /products
+### STEP 2: Click "Shop Now"
 
-**Co widzi klient:**
-- Karty produktów z zdjęciami, nazwami, cenami
-- Przyciski: Add to wishlist, Compare, Details, Buy
+→ Goes to `/products`
 
----
-
-### KROK 4: Kliknij dowolny produkt (np. "Citrus Bloom")
-
-→ Przenosi do `/product/citrus-bloom`
-
-**Co widzi klient:**
-- Zdjęcie produktu
-- Nazwa i cena
-- Nota zapachowa (top, heart, base)
-- Opis
-- Rozmiary (30ml, 50ml, 100ml)
-- Przyciski: Add to Cart, Add to Wishlist
+**What client sees:**
+- Headline: "Explore Our Fragrances"
+- Search bar
+- Filter button
+- Sorting (Newest, Price, Name)
+- Product grid (6 products)
 
 ---
 
-### KROK 5: Kliknij "Add to Cart"
+### STEP 3: Scroll down on /products
 
-**Co widzi klient:**
-- Powiadomienie "Added to cart"
-- Liczba w ikonie koszyka rośnie
-
----
-
-### KROK 6: Kliknij ikonę koszyka w header
-
-→ Przenosi do `/cart`
-
-**Co widzi klient:**
-- Lista produktów w koszyku
-- Podsumowanie (subtotal, shipping, total)
-- Przycisk "Checkout"
-- Progress darmowej dostawy (€50 = darmowa)
+**What client sees:**
+- Product cards with images, names, prices
+- Buttons: Add to wishlist, Compare, Details, Buy
 
 ---
 
-### KROK 7: Kliknij "Checkout"
+### STEP 4: Click any product (e.g., "Citrus Bloom")
 
-→ Przenosi do `/checkout`
+→ Goes to `/product/citrus-bloom`
 
-**Co widzi klient:**
-- Formularz zamówienia
-- Dane klienta (name, email, phone)
-- Adres dostawy
-- Metoda płatności
-- Podsumowanie zamówienia
-- Przycisk "Place Order"
-
----
-
-### KROK 8: Wróć do strony głównej (kliknij Logo)
-
-→ Przenosi do `/`
+**What client sees:**
+- Product image
+- Name and price
+- Fragrance notes (top, heart, base)
+- Description
+- Sizes (30ml, 50ml, 100ml)
+- Buttons: Add to Cart, Add to Wishlist
 
 ---
 
-### KROK 9: Scrolluj w dół na stronie głównej
+### STEP 5: Click "Add to Cart"
 
-**Co widzi klient:**
-- Sekcja "Why Choose Blossom?"
-- 4 karty: 100% Natural, Eco-Friendly, Fresh & Modern, Premium Quality
-
----
-
-### KROK 10: Scrolluj dalej
-
-**Co widzi klient:**
-- Sekcja "Our Signature Collection"
-- 3 produkty z kartami
-- Przycisk "View All Products"
+**What client sees:**
+- Notification "Added to cart"
+- Cart icon number increases
 
 ---
 
-### KROK 11: Scrolluj dalej
+### STEP 6: Click cart icon in header
 
-**Co widzi klient:**
-- Sekcja "Stay in the Loop" (Newsletter)
-- Formularz email + Subscribe
+→ Goes to `/cart`
 
----
-
-### KROK 12: Wpisz email i kliknij "Subscribe"
-
-**Co widzi klient:**
-- Komunikat "Thank you for subscribing!"
+**What client sees:**
+- List of products in cart
+- Summary (subtotal, shipping, Total)
+- "Checkout" button
+- Free shipping progress (€50 = free)
 
 ---
 
-### KROK 13: Scrolluj jeszcze dalej
+### STEP 7: Click "Checkout"
 
-**Co widzi klient:**
-- Sekcja "From Fruit Peels to Fresh Scents" (About)
-- Statystyki: 100% Natural, 10+ Safe, 0% Chemicals
-- Misja
-- 3 wartości
-- Oś czasu (2024→2025→2026)
-- Opinie klientów
+→ Goes to `/checkout`
 
----
-
-### KROK 14: Kliknij "Learn More" (w Hero)
-
-→ Przenosi do `/about`
-
-**Co widzi klient:**
-- Pełna strona "O nas"
+**What client sees:**
+- Order form
+- Customer data (name, email, phone)
+- Delivery address
+- Payment method
+- Order summary
+- "Place Order" button
 
 ---
 
-### KROK 15: Kliknij "Contact" w menu
+### STEP 8: Return to homepage (click Logo)
 
-→ Przenosi do `/contact`
-
-**Co widzi klient:**
-- Formularz kontaktowy
-- Dane kontaktowe
+→ Goes to `/`
 
 ---
 
-### KROK 16: Kliknij "Pricing" w menu
+### STEP 9: Scroll down on homepage
 
-→ Przenosi do `/pricing`
-
-**Co widzi klient:**
-- Pakiety subskrypcji
-- ceny
+**What client sees:**
+- Section "Why Choose Blossom?"
+- 4 cards: 100% Natural, Eco-Friendly, Fresh & Modern, Premium Quality
 
 ---
 
-### KROK 17: Kliknij "Configure Your Own!" na /products
+### STEP 10: Scroll further
 
-→ Przenosi do `/configurator`
-
-**Co widzi klient:**
-- Konfigurator perfum krok po kroku
-- Wybór nuty, butelki, rozmiaru
-
----
-
-## INNE TRASY
-
-| Trasa | Co pokazać |
-|-------|----------|
-| `/compare` | Porównanie produktów (do 4) |
-| `/wishlist` | Zapisane produkty |
-| `/privacy` | Polityka prywatności |
-| `/terms` | Regulamin |
-| `/cookies` | Polityka cookie |
+**What client sees:**
+- Section "Our Signature Collection"
+- 3 product cards
+- "View All Products" button
 
 ---
 
-## CO MÓWIC PODCZAS PREZENTACJI
+### STEP 11: Scroll further
+
+**What client sees:**
+- Section "Stay in the Loop" (Newsletter)
+- Email form + Subscribe
+
+---
+
+### STEP 12: Enter email and click "Subscribe"
+
+**What client sees:**
+- Message "Thank you for subscribing!"
+
+---
+
+### STEP 13: Scroll more
+
+**What client sees:**
+- Section "From Fruit Peels to Fresh Scents" (About)
+- Statistics: 100% Natural, 10+ Safe, 0% Chemicals
+- Mission
+- 3 values
+- Timeline (2024→2025→2026)
+- Customer reviews
+
+---
+
+### STEP 14: Click "Learn More" (in Hero)
+
+→ Goes to `/about`
+
+**What client sees:**
+- Full "About us" page
+
+---
+
+### STEP 15: Click "Contact" in menu
+
+→ Goes to `/contact`
+
+**What client sees:**
+- Contact form
+- Contact details
+
+---
+
+### STEP 16: Click "Pricing" in menu
+
+→ Goes to `/pricing`
+
+**What client sees:**
+- Subscription packages
+- Prices
+
+---
+
+### STEP 17: Click "Configure Your Own!" on /products
+
+→ Goes to `/configurator`
+
+**What client sees:**
+- Perfume configurator step by step
+- Choose notes, bottle, size
+
+---
+
+## OTHER ROUTES
+
+| Route | What to show |
+|-------|------------|
+| `/compare` | Product comparison (up to 4) |
+| `/wishlist` | Saved products |
+| `/privacy` | Privacy policy |
+| `/terms` | Terms of service |
+| `/cookies` | Cookie policy |
+
+---
+
+## WHAT TO SAY DURING PRESENTATION
 
 ### Hero:
-> "To nasza marka Blossom - naturalne perfumy ze skórek owoców. Bez chemii, dla dzieci od 10 lat."
+> "This is our brand Blossom - natural perfumes made from fruit peels. No chemicals, for kids aged 10+."
 
 ### Products:
-> "Oto nasza kolekcja 6 unikalnych zapachów. Każdy inny, każdy naturalny."
+> "This is our collection of 6 unique scents. Each different, each natural."
 
 ### Product Detail:
-> "Możesz wybrać rozmiar i dodać do koszyka jednym kliknięciem."
+> "You can choose the size and add to cart with one click."
 
 ### Cart:
-> "Koszyk pokazuje co wybrałeś. Powyżej €50 = darmowa dostawa."
+> "The cart shows what you chose. Over €50 = free shipping."
 
 ### Checkout:
-> "Proste zamówienie - dane, adres, płatność i gotowe."
+> "Simple order - data, address, payment and done."
 
 ### About:
-> "Nasza misja - zero chemii, 100% naturalne, eko opakowania."
+> "Our mission - zero chemicals, 100% natural, eco packaging."
 
-### Konfigurator:
-> "Możesz stworzyć własny zapach - wybierasz nuty, butelkę, rozmiar."
+### Configurator:
+> "You can create your own scent - choose notes, bottle, size."
+
+---
+
+## Project Readme (Polish)
+
+### Sekcje strony głównej
+
+| Sekcja | Plik |
+|-------|------|
+| Hero | `src/components/Hero` |
+| Features | `src/components/Features` |
+| ProductShowcase | `src/components/ProductShowcase` |
+| Newsletter | `src/components/Newsletter` |
+| About | `src/container/About` |
+
+### Wszystkie trasy
+
+| Ścieżka | Komponent |
+|---------|----------|
+| `/` | Home |
+| `/products` | Products |
+| `/product/:productId` | ProductDetail |
+| `/cart` | Cart |
+| `/checkout` | Checkout |
+| `/wishlist` | Wishlist |
+| `/compare` | Compare |
+| `/configurator` | Configurator |
+| `/pricing` | Pricing |
+| `/about` | About |
+| `/contact` | Contact |
+| `/privacy` | Privacy |
+| `/terms` | Terms |
+| `/cookies` | Cookies |
+
+### Uruchomienie
+
+```bash
+bun install
+bun run dev
+```
+
+---
+
+## Quick Reference
+
+| EN | PL |
+|----|-----|
+| How to present | Jak pokazać |
+| What client sees | Co widzi klient |
+| Goes to | Przenosi do |
+| Step | Krok |
+| Homepage | Strona główna |
+| Cart | Koszyk |
+| Checkout | Zamówienie |
+| Wishlist | Lista życzeń |
+| Compare | Porównanie |
+| Configurator | Konfigurator |
