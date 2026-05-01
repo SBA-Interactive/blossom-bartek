@@ -1,10 +1,6 @@
 # Blossom Bartek - Website Presentation
 
----
-
 ## HOW TO PRESENT THE WEBSITE TO A CLIENT
-
----
 
 ### STEP 1: Go to homepage (/)
 
@@ -175,18 +171,6 @@
 
 ---
 
-## OTHER ROUTES
-
-| Route | What to show |
-|-------|------------|
-| `/compare` | Product comparison (up to 4) |
-| `/wishlist` | Saved products |
-| `/privacy` | Privacy policy |
-| `/terms` | Terms of service |
-| `/cookies` | Cookie policy |
-
----
-
 ## WHAT TO SAY DURING PRESENTATION
 
 ### Hero:
@@ -212,57 +196,21 @@
 
 ---
 
-## Project Readme (Polish)
+## OTHER ROUTES
 
-### Sekcje strony głównej
+| Route | What to show |
+|-------|------------|
+| `/compare` | Product comparison (up to 4) |
+| `/wishlist` | Saved products |
+| `/privacy` | Privacy policy |
+| `/terms` | Terms of service |
+| `/cookies` | Cookie policy |
 
-| Sekcja | Plik |
-|-------|------|
-| Hero | `src/components/Hero` |
-| Features | `src/components/Features` |
-| ProductShowcase | `src/components/ProductShowcase` |
-| Newsletter | `src/components/Newsletter` |
-| About | `src/container/About` |
+---
 
-### Wszystkie trasy
-
-| Ścieżka | Komponent |
-|---------|----------|
-| `/` | Home |
-| `/products` | Products |
-| `/product/:productId` | ProductDetail |
-| `/cart` | Cart |
-| `/checkout` | Checkout |
-| `/wishlist` | Wishlist |
-| `/compare` | Compare |
-| `/configurator` | Configurator |
-| `/pricing` | Pricing |
-| `/about` | About |
-| `/contact` | Contact |
-| `/privacy` | Privacy |
-| `/terms` | Terms |
-| `/cookies` | Cookies |
-
-### Uruchomienie
+### Running
 
 ```bash
 bun install
 bun run dev
 ```
-
----
-
-## Quick Reference
-
-| EN | PL |
-|----|-----|
-| How to present | Jak pokazać |
-| What client sees | Co widzi klient |
-| Goes to | Przenosi do |
-| Step | Krok |
-| Homepage | Strona główna |
-| Cart | Koszyk |
-| Checkout | Zamówienie |
-| Wishlist | Lista życzeń |
-| Compare | Porównanie |
-| Configurator | Konfigurator |
