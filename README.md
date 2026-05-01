@@ -1,146 +1,209 @@
-# Blossom Bartek - Strona Perfumerii
+# Blossom Bartek - Prezentacja strony
 
-## Sekcje strony głównej (`/`)
-
-### 1. Hero
-- Duży baner powitalny z nagłówkiem
-- Tło wideo (hero.webm)
-- Komponent: `src/components/Hero`
-
-### 2. Features
-- Sekcja kluczowych cech produktów/marki
-- Komponent: `src/components/Features`
-
-### 3. ProductShowcase
-- Siatka 4 polecanych produktów
-- Loading state i obsługa błędów
-- Komponent: `src/components/ProductShowcase`
-
-### 4. Newsletter
-- Formularz zapisu do newslettera
-- Komponent: `src/components/Newsletter`
-
-### 5. AboutPage
-- Treść "O nas" na stronie głównej
-- Komponent: `src/container/About`
+## JAK POKAZAĆ STRONĘ KLIENTOWI
 
 ---
 
-## Wszystkie trasy (routes)
+### KROK 1: Wejdź na stronę (/)
 
-| Ścieżka | Komponent | Opis |
-|--------|----------|------|
-| `/` | `Home` | Strona główna |
-| `/products` | `Products` | Katalog produktów |
-| `/product/:productId` | `ProductDetail` | Szczegóły produktu |
-| `/cart` | `Cart` | Koszyk |
-| `/checkout` | `Checkout` | Zamówienie |
-| `/wishlist` | `Wishlist` | Lista życzeń |
-| `/compare` | `Compare` | Porównanie produktów |
-| `/configurator` | `Configurator` | Konfigurator perfum |
-| `/pricing` | `Pricing` | Cennik |
-| `/about` | `About` | O nas |
-| `/contact` | `Contact` | Kontakt |
-| `/privacy` | `Privacy` | Polityka prywatności |
-| `/terms` | `Terms` | Regulamin |
-| `/cookies` | `Cookies` | Polityka cookie |
+**Co widzi klient:**
+- Duży baner wideo w tle z butelką perfum
+- Nagłówek: "Fresh Scents from Nature's Gift"
+- Podtekst: "Discover our collection..."
+- 3 liczby animowane: 10+ Safe Age, 100% Natural, Eco Friendly
+- 2 przyciski: "Shop Now" i "Learn More"
 
 ---
 
-## Struktura projektu
+### KROK 2: Kliknij "Shop Now"
 
-```
-src/
-├── routes/          # Definicje tras (TanStack Route)
-├── container/      # Główne komponenty stron
-├── components/     # Komponenty UI
-├── constants/      # Stałe konfiguracyjne
-├── hooks/          # Custom hooks
-├── store/          # Stan (zustand)
-└── lib/            # Narzędzia
-```
+→ Przenosi do `/products`
 
-## Tech stack
-
-- React + TypeScript
-- TanStack Router
-- Zustand (state management)
-- CSS/Tailwind
-- Vite
-
-## Uruchomienie
-
-```bash
-bun install
-bun run dev
-```
+**Co widzi klient:**
+- Nagłówek: "Explore Our Fragrances"
+- Pasek wyszukiwania
+- Przycisk filtrowania
+- Sortowanie (Newest, Price, Name)
+- Siatka produktów (6 produktów)
 
 ---
 
-## Prezentacja "klik-po-kliku" dla klienta
+### KROK 3: Scrolluj w dół na /products
 
-### Strona główna `/`
+**Co widzi klient:**
+- Karty produktów z zdjęciami, nazwami, cenami
+- Przyciski: Add to wishlist, Compare, Details, Buy
 
-#### 1. Hero (baner powitalny)
-- **Co widzi klient:** Duży baner wideo z butelką perfum w tle
-- **Tekst główny:** "Fresh Scents from Nature's Gift"
-- **Podtytuł:** "Discover our collection of natural, eco-friendly perfumes crafted from upcycled fruit peels..."
-- **Liczby (animowane):** 10+ Safe Age, 100% Natural, Eco Friendly
-- **Przyciski:**
-  - "Shop Now" → `/products`
-  - "Learn More" → `/about`
+---
 
-#### 2. Features (Dlaczego Blossom?)
-- **4 karty z ikonami:**
-  - 🥬 100% Natural – "Made from real fruit peels..."
-  - ♻️ Eco-Friendly – "We upcycle fruit peels..."
-  - ✨ Fresh & Modern – "Contemporary fragrances..."
-  - ❤️ Premium Quality – "Each fragrance is carefully crafted..."
+### KROK 4: Kliknij dowolny produkt (np. "Citrus Bloom")
 
-#### 3. ProductShowcase (Nasza kolekcja)
-- **Nagłówek:** "Our Signature Collection"
-- **3 produkty** z kartami (zdjęcie, nazwa, cena, przycisk)
-- **Przycisk:** "View All Products" → `/products`
+→ Przenosi do `/product/citrus-bloom`
 
-#### 4. Newsletter
-- **Tło:** Ciemnozielony
-- **Formularz:** email input + "Subscribe"
-- **Po wysłaniu:** "Thank you for subscribing!"
+**Co widzi klient:**
+- Zdjęcie produktu
+- Nazwa i cena
+- Nota zapachowa (top, heart, base)
+- Opis
+- Rozmiary (30ml, 50ml, 100ml)
+- Przyciski: Add to Cart, Add to Wishlist
 
-#### 5. About (O nas) - embedded
-- Nagłówek: "From Fruit Peels to Fresh Scents"
-- Statystyki: 100% Natural, 10+ Safe, 0% Chemicals, 100% Eco
-- Misja + zdjęcie
-- Wartości (3 karty)
+---
+
+### KROK 5: Kliknij "Add to Cart"
+
+**Co widzi klient:**
+- Powiadomienie "Added to cart"
+- Liczba w ikonie koszyka rośnie
+
+---
+
+### KROK 6: Kliknij ikonę koszyka w header
+
+→ Przenosi do `/cart`
+
+**Co widzi klient:**
+- Lista produktów w koszyku
+- Podsumowanie (subtotal, shipping, total)
+- Przycisk "Checkout"
+- Progress darmowej dostawy (€50 = darmowa)
+
+---
+
+### KROK 7: Kliknij "Checkout"
+
+→ Przenosi do `/checkout`
+
+**Co widzi klient:**
+- Formularz zamówienia
+- Dane klienta (name, email, phone)
+- Adres dostawy
+- Metoda płatności
+- Podsumowanie zamówienia
+- Przycisk "Place Order"
+
+---
+
+### KROK 8: Wróć do strony głównej (kliknij Logo)
+
+→ Przenosi do `/`
+
+---
+
+### KROK 9: Scrolluj w dół na stronie głównej
+
+**Co widzi klient:**
+- Sekcja "Why Choose Blossom?"
+- 4 karty: 100% Natural, Eco-Friendly, Fresh & Modern, Premium Quality
+
+---
+
+### KROK 10: Scrolluj dalej
+
+**Co widzi klient:**
+- Sekcja "Our Signature Collection"
+- 3 produkty z kartami
+- Przycisk "View All Products"
+
+---
+
+### KROK 11: Scrolluj dalej
+
+**Co widzi klient:**
+- Sekcja "Stay in the Loop" (Newsletter)
+- Formularz email + Subscribe
+
+---
+
+### KROK 12: Wpisz email i kliknij "Subscribe"
+
+**Co widzi klient:**
+- Komunikat "Thank you for subscribing!"
+
+---
+
+### KROK 13: Scrolluj jeszcze dalej
+
+**Co widzi klient:**
+- Sekcja "From Fruit Peels to Fresh Scents" (About)
+- Statystyki: 100% Natural, 10+ Safe, 0% Chemicals
+- Misja
+- 3 wartości
 - Oś czasu (2024→2025→2026)
-- Opinie klientów (3 referencje)
-- Sekcja cenowa
+- Opinie klientów
 
 ---
 
-### Nawigacja globalna
+### KROK 14: Kliknij "Learn More" (w Hero)
 
-| Element | Lokalizacja | Akcja |
-|---------|-------------|-------|
-| Logo | Góra | Klik → `/` |
-| Menu (Desktop) | Header | Products, About, Contact |
-| Menu (Mobile) | Hamburger | Rozwijane menu |
-| Koszyk | Header | `/cart` |
-| Wishlist | Header | `/wishlist` |
+→ Przenosi do `/about`
+
+**Co widzi klient:**
+- Pełna strona "O nas"
 
 ---
 
-### Inne trasy do pokazania
+### KROK 15: Kliknij "Contact" w menu
+
+→ Przenosi do `/contact`
+
+**Co widzi klient:**
+- Formularz kontaktowy
+- Dane kontaktowe
+
+---
+
+### KROK 16: Kliknij "Pricing" w menu
+
+→ Przenosi do `/pricing`
+
+**Co widzi klient:**
+- Pakiety subskrypcji
+- ceny
+
+---
+
+### KROK 17: Kliknij "Configure Your Own!" na /products
+
+→ Przenosi do `/configurator`
+
+**Co widzi klient:**
+- Konfigurator perfum krok po kroku
+- Wybór nuty, butelki, rozmiaru
+
+---
+
+## INNE TRASY
 
 | Trasa | Co pokazać |
-|------|-----------|
-| `/products` | Siatka produktów, filtry, sortowanie |
-| `/product/:id` | Szczegóły perfum, dodaj do koszyka, warianty |
-| `/cart` | Produkty w koszyku, podsumowanie, Checkout |
-| `/checkout` | Formularz zamówienia, dane |
-| `/configurator` | Tworzenie własnych perfum krok po kroku |
-| `/compare` | Porównanie 2-4 produktów |
-| `/pricing` | Pakiety i ceny |
-| `/about` | Pełna strona "O nas" |
-| `/contact` | Formularz kontaktowy |
+|-------|----------|
+| `/compare` | Porównanie produktów (do 4) |
 | `/wishlist` | Zapisane produkty |
+| `/privacy` | Polityka prywatności |
+| `/terms` | Regulamin |
+| `/cookies` | Polityka cookie |
+
+---
+
+## CO MÓWIC PODCZAS PREZENTACJI
+
+### Hero:
+> "To nasza marka Blossom - naturalne perfumy ze skórek owoców. Bez chemii, dla dzieci od 10 lat."
+
+### Products:
+> "Oto nasza kolekcja 6 unikalnych zapachów. Każdy inny, każdy naturalny."
+
+### Product Detail:
+> "Możesz wybrać rozmiar i dodać do koszyka jednym kliknięciem."
+
+### Cart:
+> "Koszyk pokazuje co wybrałeś. Powyżej €50 = darmowa dostawa."
+
+### Checkout:
+> "Proste zamówienie - dane, adres, płatność i gotowe."
+
+### About:
+> "Nasza misja - zero chemii, 100% naturalne, eko opakowania."
+
+### Konfigurator:
+> "Możesz stworzyć własny zapach - wybierasz nuty, butelkę, rozmiar."
